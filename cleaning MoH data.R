@@ -1,10 +1,11 @@
 library(dplyr)
 library(stringr)
 library(tidyr)
+
 #name columns
 names(table) <- c("Values", "2018", "2019", "2020")
-
 table1 <- table[-1,]
+
 #filter out unnecessary row
 table1 <- table1[c(2:3, 50:51, 98:99, 147:148, 151:154, 157:158, 161, 166:169),]
 
