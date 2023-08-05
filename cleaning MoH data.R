@@ -19,9 +19,10 @@ table1 <- table1 %>%
 #some variables were over two rows -- I simplified them
 table1[2,1] <- table1[1,1]
 table1[4,1] <- table1[3,1]
-table[6,1] <- table1[5,1]
+table1[6,1] <- table1[5,1]
 table1 <- table1[-c(1,3,5),]
 
+table1[6,1]
 #make columns 2 to 4 numeric
 table1 <- table1 %>%
   mutate_at(vars(`2018`, `2019`, `2020`), ~str_replace_all(., ",", ""))
