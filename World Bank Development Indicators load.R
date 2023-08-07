@@ -2,7 +2,7 @@ library(WDI)
 library(dplyr)
 
 # List of countries to filter, including additional countries Taiwan, South Korea, and Japan
-countries_of_interest <- c("AU", "CH", "FI", "FR", "GB", "IE", "NL", "SG", "US", "ES", "GR", "PT", "IT", "NO", "TW", "KR", "JP")
+countries_of_interest <- c("AU", "CH", "FI", "FR", "GB", "IE", "NL", "SG", "US", "ES", "GR", "PT", "IT", "NO", "KR", "JP")
 
 # Fetching the necessary data
 GDP_per_capita_USD <- WDI(indicator = "NY.GDP.PCAP.CD", country = countries_of_interest)
