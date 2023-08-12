@@ -59,9 +59,18 @@ new_data_frame <- new_data_frame %>%
   ungroup()
 new_data_frame <- new_data_frame %>%
   select(`TOSP Code`, `TOSP Description`, `expanded descriptors`, everything())
+final_data_frame <- new_data_frame %>%
+  filter(grepl("total", `TOSP Description`, ignore.case = TRUE))
+numeric_cols <- sapply(final_data_frame, is.numeric)
+final_data_frame[numeric_cols] <- lapply(final_data_frame[numeric_cols], function(x) round(x, digits = 3))
 
-html_table <- new_data_frame %>%
-  kable(format = "html", escape = FALSE) %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))
+# Create HTML table using kable
+html_table <- final_data_frame %>%
+  kable("html", escape = FALSE) %>%
+  kable_styling(full_width = F, position = "center") %>%
+  row_spec(0, bold = TRUE, extra_css = "border-bottom: 2px solid black; border-top: 2px solid black;") %>%
+  row_spec(1:nrow(final_data_frame), extra_css = "border-bottom: 2px solid black; border-top: 2px solid black;") %>%
+  column_spec(1:ncol(final_data_frame), border_left = TRUE, border_right = TRUE, extra_css = "border-left: 2px solid black; border-right: 2px solid black;")
 
-writeLines(html_table, "new_data_frame.html")
+# Write HTML table to file
+writeLines(html_table, "final_data_frame.html")

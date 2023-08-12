@@ -45,4 +45,4 @@ text(data_2019$GDP_per_capita_USD_PPP[data_2019$country == "IE"], data_2019$heal
 text(data_2019$GDP_per_capita_USD_PPP[data_2019$country == "US"], data_2019$health_care_per_capita_USD_PPP[data_2019$country == "US"] + offset, labels = "US")
 text(data_2019$GDP_per_capita_USD_PPP[data_2019$country == "SG"], data_2019$health_care_per_capita_USD_PPP[data_2019$country == "SG"] + offset, labels = "SG")
 
-write.csv(data_2019, file = "data_2019.csv", row.names = FALSE)
+plot()

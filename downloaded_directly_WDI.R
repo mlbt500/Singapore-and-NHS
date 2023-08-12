@@ -50,5 +50,15 @@ uk_sg_data_final <- uk_sg_data_2019 %>%
          health_care_per_capita_PPP = health_care_per_capita_PPP,
          ppp_adjustor = conversion_factor)
 
-# Print the final table
-unique(data_2019$country)
+# Determine the y-axis limits
+y_min <- min(data_2019$GDP_per_capita_USD_PPP * data_2019$conversion_factor)
+y_max <- max(data_2019$GDP_per_capita_USD_PPP * data_2019$conversion_factor) * 1.2
+
+# Plot the main graph with adjusted y-axis limits
+plot((GDP_per_capita_USD_PPP*conversion_factor) ~ conversion_factor, data = data_2019, ylab = "GDP per capita", xlab = "PPP conversion factor")
+# Offset value to move the labels down
+offset <- (y_max - y_min) * 0.05 # Adjust as needed
+
+# Add labels for Ireland and Singapore
+text(data_2019$conversion_factor[data_2019$country == "IE"], (data_2019$GDP_per_capita_USD_PPP[data_2019$country == "IE"] * data_2019$conversion_factor[data_2019$country == "IE"]) - offset, labels = "IE")
+text(data_2019$conversion_factor[data_2019$country == "SG"], (data_2019$GDP_per_capita_USD_PPP[data_2019$country == "SG"] * data_2019$conversion_factor[data_2019$country == "SG"]) - offset, labels = "SG")
