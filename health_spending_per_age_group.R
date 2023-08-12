@@ -46,3 +46,19 @@ result1 <- NTA3 %>%
   filter(Variable.Name == "Health*Population" & Country %in% c("Singapore", "United Kingdom")) %>%
   group_by(Country) %>%
   summarise(Total_Value = sum(Value, na.rm = TRUE), .groups = 'drop')
+
+# Getting the total population
+total_population <- NTA2[NTA2$Variable.Name == "Population, Total", ]
+total_population_sum <- total_population %>%
+  group_by(Country) %>%
+  summarise(Total_Population = sum(Value, na.rm = TRUE))
+
+# Merging total "Health*Population" with total population
+final_result <- merge(result1, total_population_sum, by = "Country")
+
+# Calculating spending per person
+final_result <- final_result %>%
+  mutate(Spending_Per_Person = Total_Value / Total_Population)
+
+# Printing final_result
+print(final_result)
