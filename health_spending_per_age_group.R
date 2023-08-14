@@ -41,24 +41,44 @@ combined_data$Variable.Name <- "Health*Population"
 combined_data <- combined_data[, c("Country", "Year", "Variable.Name", "Age_Group", "Value")]
 NTA3 <- bind_rows(NTA2, combined_data)
 
-# Result 1: Total Health*Population
-result1 <- NTA3 %>%
-  filter(Variable.Name == "Health*Population" & Country %in% c("Singapore", "United Kingdom")) %>%
-  group_by(Country) %>%
-  summarise(Total_Value = sum(Value, na.rm = TRUE), .groups = 'drop')
+#Calculating Health*Singapore with United Kingdom Population
+health_data <- NTA2[NTA2$Variable.Name == "Public and Private, Health" & NTA2$Country == "Singapore",]
+health_data$Country <- NULL
+pop_data <- NTA2[NTA2$Variable.Name == "Population, Total" & NTA2$Country == "United Kingdom",]
+pop_data$Country <- NULL
+combined_data <- merge(health_data, pop_data, by = c("Age_Group", "Year"))
+combined_data$Value <- combined_data$Value.x * combined_data$Value.y
+combined_data$Variable.Name <- "Health*Population"
+combined_data <- combined_data[, c("Year", "Variable.Name", "Age_Group", "Value")]
+combined_data$Country <- "Singapore with United Kingdom Population"
+combined_data <- combined_data[,c("Country", "Year", "Variable.Name", "Age_Group", "Value")]
+NTA4 <- bind_rows(NTA3, combined_data)
 
-# Getting the total population
-total_population <- NTA2[NTA2$Variable.Name == "Population, Total", ]
-total_population_sum <- total_population %>%
-  group_by(Country) %>%
-  summarise(Total_Population = sum(Value, na.rm = TRUE))
 
-# Merging total "Health*Population" with total population
-final_result <- merge(result1, total_population_sum, by = "Country")
+# Summary table 
+summary_table <- data.frame("Country" = c("United Kingdom", "Singapore", "Singapore with United Kingdom Population"),
+                            "Total_Population*Health" = c(sum(NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Health*Population",]$Value, na.rm = TRUE),
+                                                          sum(NTA4[NTA4$Country == "Singapore" & NTA4$Variable.Name == "Health*Population",]$Value, na.rm = TRUE),
+                                                          sum(NTA4[NTA4$Country == "Singapore with United Kingdom Population" & NTA4$Variable.Name == "Health*Population",]$Value, na.rm = TRUE)),
+                            "Population" = c(sum(NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Population, Total",]$Value, na.rm = TRUE),
+                                             sum(NTA4[NTA4$Country == "Singapore" & NTA4$Variable.Name == "Population, Total",]$Value, na.rm = TRUE),
+                                             sum(NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Population, Total",]$Value, na.rm = TRUE)))
 
-# Calculating spending per person
-final_result <- final_result %>%
-  mutate(Spending_Per_Person = Total_Value / Total_Population)
+# Summary table per capita spend (local)
+values <- numeric()
+for(i in 1:3){
+  values <- c(values, summary_table[i, "Total_Population.Health"]/summary_table[i, "Population"])
+    
+}
+summary_table$Per_Capita_Spend_Local <- values
 
-# Printing final_result
-print(final_result)
+# Summary table per capita spend(USD)
+summary_table$Currency_Conversion <- c(1.23, 0.84, 0.84)
+values <- numeric()
+for(i in 1:3){
+  USD <- summary_table[i,"Per_Capita_Spend_Local"] * summary_table[i, "Currency_Conversion"]
+  values <- c(values, USD)
+}
+summary_table$Per_Capita_Spend_USD <- values
+
+summary_table
