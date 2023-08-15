@@ -102,7 +102,7 @@ for(i in 1:3){
 summary_table$Per_Capita_Spend_Local <- values
 
 # Summary table per capita spend(USD)
-summary_table$Currency_Conversion <- c(1.25, 0.64, 0.64)
+summary_table$Currency_Conversion <- c(1.5647, 0.7993, 0.7993)
 values <- numeric()
 for(i in 1:3){
   USD <- summary_table[i,"Per_Capita_Spend_Local"] * summary_table[i, "Currency_Conversion"]
