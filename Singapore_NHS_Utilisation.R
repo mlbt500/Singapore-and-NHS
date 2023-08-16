@@ -55,6 +55,7 @@ GP_estimate[1, 1] <- "Private GP estimate"
 colnames(GP_estimate) <- names(table2)
 Singapore_health_utilisation <- rbind(table2, GP_estimate)
 hospital_admissions_SG <- as.numeric(sum(Singapore_health_utilisation[1:3,2]))
+A_and_E_visits_SG <- as.numeric(table2[13,3])
 
 #population and per capita
 Population <- WDI(indicator = "SP.POP.TOTL", country = "SG", start = 2019, end = 2019)
@@ -62,7 +63,8 @@ Population_SG <- as.numeric(Population[,5])
 
 GP_visits_per_capita <- total_gp_estimate_2019/Population_SG
 hospital_admissions_per_capita <- hospital_admissions_SG/Population_SG
-
+A_and_E_visits_per_capita <- A_and_E_visits_SG/Population_SG
+A_and_E_visits_per_capita
 
 # URL of the file
 url <- "https://files.digital.nhs.uk/05/A594E3/hosp-epis-stat-admi-rep-tabs-2018-19-tab.xlsx"
@@ -128,17 +130,46 @@ gp_appointments[, 3:20] <- lapply(gp_appointments[, 3:20], function(col) as.nume
 gp_appointments
 total_no_gp_app_2019 <- sum(gp_appointments[11,3:14])
 
+#NHS England A&E
+# Define the URL of the file you want to download
+url <- "https://files.digital.nhs.uk/DB/1CED9F/AE1819_Summary_Report_Tables.xlsx"
+
+# Download the file to a temporary location
+tmp_file <- tempfile(fileext = ".xlsx")
+download.file(url, tmp_file, mode = "wb")
+
+# Load the desired sheet from the Excel file into R
+A_and_E <- read_xlsx(tmp_file, sheet = 3)
+
+# Clean
+A_and_E_cleaned <- as.data.frame(A_and_E[-c(1:3,6, 6:23),])
+A_and_E_cleaned <- A_and_E_cleaned[,-1]
+NAMES <- A_and_E_cleaned[1,]
+colnames(A_and_E_cleaned) <- NAMES
+A_and_E_cleaned <- A_and_E_cleaned[-1,]
+rownames(A_and_E_cleaned) <- "MSitAE"
+A_and_E_2018.19 <- as.numeric(A_and_E_cleaned[,10])
+
 #population of England 2019
 England_population_2019 <- 56.3 * 10^6 # source ONS:https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/overviewoftheukpopulation/january2021
 England_GP_visits_per_capita_2019 <- total_no_gp_app_2019/England_population_2019
 England_hos_visits_per_capita <- adm_2018.2019/England_population_2019
+England_A_and_E_per_capita <- A_and_E_2018.19/England_population_2019
 
 Singapore <- data.frame("Source" = "Singapore MoH", 
                         "Hospital visits per capita" = hospital_admissions_per_capita, 
-                        "GP visits per capita" = GP_visits_per_capita) # Assuming you have a variable called GP_visits_per_capita
+                        "GP visits per capita" = GP_visits_per_capita,
+                        "A&E visits per capita" = A_and_E_visits_per_capita) 
 
 England <- data.frame("Source" = "NHS England", 
                       "Hospital visits per capita" = England_hos_visits_per_capita, 
-                      "GP visits per capita" = England_GP_visits_per_capita_2019) # Assuming you have a variable called England_GP_visits_per_capita
+                      "GP visits per capita" = England_GP_visits_per_capita_2019,
+                      "A&E visits per capita" = England_A_and_E_per_capita)
 
 summary_table <- rbind(Singapore, England)
+
+comparison <- data.frame("Source" = "England/Singapore", 
+                      "Hospital visits per capita" = England_hos_visits_per_capita/hospital_admissions_per_capita, 
+                      "GP visits per capita" = England_GP_visits_per_capita_2019/GP_visits_per_capita,
+                      "A&E visits per capita" = England_A_and_E_per_capita/A_and_E_visits_per_capita)
+summary_table <- rbind(summary_table, comparison)
