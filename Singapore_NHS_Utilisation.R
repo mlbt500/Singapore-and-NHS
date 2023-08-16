@@ -2,6 +2,7 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(WDI)
+library(readxl)
 library(rvest)
 library(httr)
 
