@@ -191,32 +191,52 @@ new_data$Age_Group <- as.numeric(new_data$Age_Group)
 new_data_SG <- new_data[new_data$Country == "Singapore",]
 new_data_UK <- new_data[new_data$Country == "United Kingdom",]
 new_data_total <- new_data[new_data$Variable.Name == "Public and Private, Health", ]
+# Set a font size
+font_size <- 14
 
-ggplot(new_data_SG, aes(x = Age_Group, y = Value, color = Variable.Name, group = Variable.Name)) +
-  geom_line(size = 1) + # this creates the lines
+# Use a specific color palette (modify this based on your data categories)
+ft_palette <- c("deepskyblue3", "darkorange2", "darkgrey")
+
+# Singapore plot
+sg_plot <- ggplot(new_data_SG, aes(x = Age_Group, y = Value, color = Variable.Name, group = Variable.Name)) +
+  geom_line(size = 1) +
+  scale_color_manual(values = ft_palette) +
   labs(
-    title = "Health Expenditures in Singapore (2013)",
-    x = "Age Group",
+    title = "Health Expenditure 2013",
+    x = "Age",
     y = "Value (USD)",
     color = "Expenditure Type"
   ) +
-  theme_minimal() + # gives a clean theme
-  theme(legend.position="top") # puts the legend at the top
+  theme_minimal(base_size = font_size) +
+  theme(legend.position = c(0, 1), legend.justification = c(0, 1), panel.grid.minor = element_blank())
 
+# UK plot
+uk_plot <- ggplot(new_data_UK, aes(x = Age_Group, y = Value, color = Variable.Name)) +
+  geom_line(size = 1) +
+  scale_color_manual(values = ft_palette) +
+  labs(
+    title = "Health Expenditure 2013",
+    x = "Age",
+    y = "Expenditure (USD)",
+    color = "Expenditure Type"
+  ) +
+  theme_minimal(base_size = font_size) +
+  theme(legend.position = c(0, 1), legend.justification = c(0, 1), panel.grid.minor = element_blank())
 
-ggplot(new_data_UK, aes(x = Age_Group, y = Value, color = Variable.Name)) +
-  geom_line() +
-  labs(title = "Health Expenditure in the United Kingdom (2013)",
-       x = "Age",
-       y = "Expenditure (USD)",
-       color = "Expenditure Type") +
-  theme_minimal()
+# Total plot
+total_plot <- ggplot(new_data_total, aes(x = Age_Group, y = Value, color = Country)) +
+  geom_line(size = 1) +
+  scale_color_manual(values = ft_palette) +
+  labs(
+    title = "Health Expenditure 2013",
+    x = "Age",
+    y = "Expenditure (USD)",
+    color = "Country"
+  ) +
+  theme_minimal(base_size = font_size) +
+  theme(legend.position = c(0, 1), legend.justification = c(0, 1), panel.grid.minor = element_blank())
 
-ggplot(new_data_total, aes(x = Age_Group, y = Value, color = Country)) +
-  geom_line() +
-  labs(title = "Total Health Expenditure (Public and Private) for Singapore and UK (2013)",
-       x = "Age",
-       y = "Expenditure (USD)",
-       color = "Country") +
-  theme_minimal()
-
+# Print the plots
+print(sg_plot)
+print(uk_plot)
+print(total_plot)
