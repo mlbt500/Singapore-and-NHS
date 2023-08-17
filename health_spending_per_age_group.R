@@ -1,4 +1,3 @@
-library(dplyr)
 library(tidyverse)
 library(WDI)
 library(knitr)
@@ -23,6 +22,23 @@ NTA_2013_long <- NTA_2013 %>%
 # Selecting required columns
 NTA1 <- NTA_2013_long[,c("Country", "Year", "Variable.Name", "Age_Group", "Value")]
 NTA1 <- NTA1[NTA1$Age_Group != "Age.Groups", ]
+
+# Removing word Age from Age column values
+
+NTA1$Age_Group <- gsub(pattern = "Age", replacement = "", x = NTA1$Age_Group)
+NTA1$Age_Group <- as.numeric(NTA1$Age_Group)
+
+#Multiply health spend values by conversion rate to give USD
+
+NTA1[NTA1$Country == "United Kingdom" & NTA1$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"),]$Value <- NTA1[NTA1$Country == "United Kingdom" & NTA1$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"),]$Value/0.6396
+NTA1[NTA1$Country == "Singapore" & NTA1$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"),]$Value <- NTA1[NTA1$Country == "Singapore" & NTA1$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"),]$Value*0.7993
+
+# Remove rows for the UK where Age_Group is greater than 85 (SG only contains values up to 85)
+NTA1 <- NTA1 %>%
+  filter(!(Country == "United Kingdom" & Age_Group > 85))
+
+NTA1 <- NTA1 %>%
+  filter(!(Country == "Singapore" & Age_Group > 85))
 
 # Multiplying UK's population by 1000
 NTA1$Value <- ifelse(NTA1$Country == "United Kingdom" & NTA1$Variable.Name == "Population, Total", NTA1$Value * 1000, NTA1$Value)
@@ -74,13 +90,13 @@ calculate_median_age <- function(data) {
 
 # Median age Singapore
 NTAS <- NTA4[NTA4$Country == "Singapore" & NTA4$Variable.Name == "Population, Total",]
-NTAS$Age <- 0:110
+NTAS$Age <- 0:85
 pop_sing <- calculate_median_age(NTAS)
 pop_sing
 
 # Median age UK
 NTAS <- NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Population, Total",]
-NTAS$Age <- 0:110
+NTAS$Age <- 0:85
 pop_UK <- calculate_median_age(NTAS)
 pop_UK
 
@@ -100,16 +116,7 @@ for(i in 1:3){
   values <- c(values, summary_table[i, "Total_Population.Health"]/summary_table[i, "Population"])
   
 }
-summary_table$Per_Capita_Spend_Local <- values
-
-# Summary table per capita spend(USD)
-summary_table$Currency_Conversion <- c(1.5647, 0.7993, 0.7993)
-values <- numeric()
-for(i in 1:3){
-  USD <- summary_table[i,"Per_Capita_Spend_Local"] * summary_table[i, "Currency_Conversion"]
-  values <- c(values, USD)
-}
-summary_table$Per_Capita_Spend_USD <- values
+summary_table$Per_Capita_USD <- values
 
 # Add median age
 summary_table$Median_Age <- c(pop_UK, pop_sing, pop_UK)
@@ -178,19 +185,12 @@ subset_data <- NTA3[NTA3$Variable.Name %in% c("Public Consumption, Health", "Pri
 # 2. Duplicate these rows
 new_data <- subset_data
 
-# 3. Modify the Value column based on the country's conversion rate
-new_data$Value[new_data$Country == "Singapore"] <- new_data$Value[new_data$Country == "Singapore"]/1.5647
-new_data$Value[new_data$Country == "United Kingdom"] <- new_data$Value[new_data$Country == "United Kingdom"]/0.7993
-
-# 4. Append "USD" to the Variable.Name column
-new_data$Variable.Name <- paste(new_data$Variable.Name, "USD")
-
 # Singapore 
 new_data$Age_Group <- gsub(pattern = "Age", replacement = "", x = new_data$Age_Group)
 new_data$Age_Group <- as.numeric(new_data$Age_Group)
 new_data_SG <- new_data[new_data$Country == "Singapore",]
 new_data_UK <- new_data[new_data$Country == "United Kingdom",]
-new_data_total <- new_data[new_data$Variable.Name == "Public and Private, Health USD", ]
+new_data_total <- new_data[new_data$Variable.Name == "Public and Private, Health", ]
 
 ggplot(new_data_SG, aes(x = Age_Group, y = Value, color = Variable.Name, group = Variable.Name)) +
   geom_line(size = 1) + # this creates the lines
