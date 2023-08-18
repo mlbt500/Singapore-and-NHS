@@ -43,13 +43,46 @@ NTA1 <- NTA1 %>%
 # Multiplying UK's population by 1000
 NTA1$Value <- ifelse(NTA1$Country == "United Kingdom" & NTA1$Variable.Name == "Population, Total", NTA1$Value * 1000, NTA1$Value)
 
+# Calculating PPP adjusted health spending
+
+# Create duplicated rows
+duplicated_rows <- filter(NTA1, Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"))
+duplicated_rows$Variable.Name <- paste0(duplicated_rows$Variable.Name, " PPP")
+
+# Adjust values for Singapore
+duplicated_rows <- mutate(duplicated_rows,
+                          Value = ifelse(Country == "Singapore", 
+                                         Value * (1.251/0.859), 
+                                         Value))
+
+# Adjust values for the UK
+duplicated_rows <- mutate(duplicated_rows,
+                          Value = ifelse(Country == "United Kingdom", 
+                                         Value * (0.695/0.640), 
+                                         Value))
+
+# Bind back to original tibble
+NTA1_updated <- bind_rows(NTA1, duplicated_rows)
+
 # Summing public and private health spending
-relevant_data <- NTA1[NTA1$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"),]
+relevant_data <- NTA1_updated[NTA1_updated$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health"),]
 sum_data <- relevant_data %>%
   group_by(Country, Age_Group, Year) %>%
   summarise(Value = sum(Value), .groups = 'drop')
 sum_data$Variable.Name <- "Public and Private, Health"
-NTA2 <- bind_rows(NTA1, sum_data)
+NTA2 <- bind_rows(NTA1_updated, sum_data)
+
+# Filter for the newly created PPP-adjusted values
+relevant_ppp_data <- filter(duplicated_rows, Variable.Name %in% c("Public Consumption, Health PPP", "Private Consumption, Health PPP"))
+
+# Sum these PPP-adjusted values
+sum_ppp_data <- relevant_ppp_data %>%
+  group_by(Country, Age_Group, Year) %>%
+  summarise(Value = sum(Value), .groups = 'drop')
+sum_ppp_data$Variable.Name <- "Public and Private, Health PPP"
+
+# Now bind these aggregated PPP-adjusted rows back to NTA2 (since NTA2 already contains the original NTA1 and summed data for Public and Private Health)
+NTA2 <- bind_rows(NTA2, sum_ppp_data)
 
 # Calculating Health*Population
 health_data <- NTA2[NTA2$Variable.Name == "Public and Private, Health",]
@@ -73,6 +106,41 @@ combined_data$Country <- "Singapore with United Kingdom Population"
 combined_data <- combined_data[,c("Country", "Year", "Variable.Name", "Age_Group", "Value")]
 NTA4 <- bind_rows(NTA3, combined_data)
 
+# PPP adjusted Health*Population
+
+health_data <- NTA2[NTA2$Variable.Name == "Public and Private, Health PPP",]
+pop_data <- NTA2[NTA2$Variable.Name == "Population, Total",]
+combined_data <- merge(health_data, pop_data, by = c("Country", "Age_Group", "Year"))
+combined_data$Value <- combined_data$Value.x * combined_data$Value.y
+combined_data$Variable.Name <- "Health*Population PPP"
+combined_data <- combined_data[, c("Country", "Year", "Variable.Name", "Age_Group", "Value")]
+NTA5 <- bind_rows(NTA4, combined_data)
+
+# PPP adjsuted Health*Population Singapore with UK population
+# Filter Singapore's Health PPP data
+health_data <- NTA5 %>% 
+  filter(Variable.Name == "Public and Private, Health PPP" & Country == "Singapore") %>%
+  select(-Country)
+
+# Filter UK's Population data
+pop_data <- NTA5 %>%
+  filter(Variable.Name == "Population, Total" & Country == "United Kingdom") %>%
+  select(-Country)
+
+# Merge the datasets
+combined_data <- merge(health_data, pop_data, by = c("Age_Group", "Year"))
+
+# Compute new value
+combined_data$Value <- combined_data$Value.x * combined_data$Value.y
+
+# Update variable name
+combined_data$Variable.Name <- "Health*Population PPP"
+combined_data$Country <- "Singapore with United Kingdom Population"
+combined_data <- combined_data[, c("Country", "Year", "Variable.Name", "Age_Group", "Value")]
+
+# Combine with NTA5
+NTA6 <- bind_rows(NTA5, combined_data)
+
 # Function to calculate median age
 calculate_median_age <- function(data) {
   cumulative_pop <- cumsum(data$Value)
@@ -89,37 +157,36 @@ calculate_median_age <- function(data) {
 }
 
 # Median age Singapore
-NTAS <- NTA4[NTA4$Country == "Singapore" & NTA4$Variable.Name == "Population, Total",]
+NTAS <- NTA6[NTA6$Country == "Singapore" & NTA6$Variable.Name == "Population, Total",]
 NTAS$Age <- 0:85
 pop_sing <- calculate_median_age(NTAS)
 pop_sing
 
 # Median age UK
-NTAS <- NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Population, Total",]
-NTAS$Age <- 0:85
-pop_UK <- calculate_median_age(NTAS)
+NTAUK <- NTA6[NTA6$Country == "United Kingdom" & NTA6$Variable.Name == "Population, Total",]
+NTAUK$Age <- 0:85
+pop_UK <- calculate_median_age(NTAUK)
 pop_UK
 
 
-# Summary table 
-summary_table <- data.frame("Country" = c("United Kingdom", "Singapore", "Singapore with United Kingdom Population"),
-                            "Total_Population*Health" = c(sum(NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Health*Population",]$Value, na.rm = TRUE),
-                                                          sum(NTA4[NTA4$Country == "Singapore" & NTA4$Variable.Name == "Health*Population",]$Value, na.rm = TRUE),
-                                                          sum(NTA4[NTA4$Country == "Singapore with United Kingdom Population" & NTA4$Variable.Name == "Health*Population",]$Value, na.rm = TRUE)),
-                            "Population" = c(sum(NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Population, Total",]$Value, na.rm = TRUE),
-                                             sum(NTA4[NTA4$Country == "Singapore" & NTA4$Variable.Name == "Population, Total",]$Value, na.rm = TRUE),
-                                             sum(NTA4[NTA4$Country == "United Kingdom" & NTA4$Variable.Name == "Population, Total",]$Value, na.rm = TRUE)))
+# Compute the summary table using dplyr for NTA6
+summary_table <- NTA6 %>%
+  filter(Variable.Name %in% c("Health*Population", "Population, Total", "Health*Population PPP")) %>%
+  group_by(Country, Variable.Name) %>%
+  summarise(Value = sum(Value, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = Variable.Name, values_from = Value) %>%
+  mutate(Health_Per_Capita = ifelse(Country == "Singapore with United Kingdom Population",
+                                    `Health*Population` / uk_population,
+                                    `Health*Population` / `Population, Total`),
+         Health_Per_Capita_PPP = ifelse(Country == "Singapore with United Kingdom Population",
+                                        `Health*Population PPP` / uk_population,
+                                        `Health*Population PPP` / `Population, Total`),
+         Median_Age = case_when(
+           Country == "United Kingdom" ~ pop_UK,
+           Country == "Singapore" ~ pop_sing,
+           TRUE ~ pop_UK
+         ))
 
-# Summary table per capita spend (local)
-values <- numeric()
-for(i in 1:3){
-  values <- c(values, summary_table[i, "Total_Population.Health"]/summary_table[i, "Population"])
-  
-}
-summary_table$Per_Capita_USD <- values
-
-# Add median age
-summary_table$Median_Age <- c(pop_UK, pop_sing, pop_UK)
 
 # World Bank data
 # List of countries to filter
@@ -141,10 +208,12 @@ data_2013 <- final_data[final_data$year == 2013,]
 WB_pop <- data_2013$Population
 WB_spend <- data_2013$health_care_per_capita_USD
 
-#merge with summary table
-
-summary_table$World_Bank_Population <- c(WB_pop, NA)
-summary_table$World_Bank_Per_Capita_Health_Spend_USD <- c(WB_spend, NA)
+# Merge with summary table
+summary_table <- summary_table %>%
+  mutate(World_Bank_Population = ifelse(Country == "United Kingdom", WB_pop[1],
+                                        ifelse(Country == "Singapore", WB_pop[2], NA)),
+         World_Bank_Per_Capita_Health_Spend_USD = ifelse(Country == "United Kingdom", WB_spend[1],
+                                                         ifelse(Country == "Singapore", WB_spend[2], NA)))
 
 # export html
 
@@ -179,8 +248,8 @@ writeLines(final_html, "summary_table_with_key.html")
 
 # graphs for comparison
 
-# 1. Filter out the rows for the three mentioned variables.
-subset_data <- NTA3[NTA3$Variable.Name %in% c("Public Consumption, Health", "Private Consumption, Health", "Public and Private, Health"),]
+# 1. Filter out the rows for the three mentioned variables with PPP adjustments.
+subset_data <- NTA6[NTA6$Variable.Name %in% c("Public Consumption, Health PPP", "Private Consumption, Health PPP", "Public and Private, Health PPP"),]
 
 # 2. Duplicate these rows
 new_data <- subset_data
@@ -190,11 +259,12 @@ new_data$Age_Group <- gsub(pattern = "Age", replacement = "", x = new_data$Age_G
 new_data$Age_Group <- as.numeric(new_data$Age_Group)
 new_data_SG <- new_data[new_data$Country == "Singapore",]
 new_data_UK <- new_data[new_data$Country == "United Kingdom",]
-new_data_total <- new_data[new_data$Variable.Name == "Public and Private, Health", ]
+new_data_total <- new_data[new_data$Variable.Name == "Public and Private, Health PPP", ]
+
 # Set a font size
 font_size <- 14
 
-# Use a specific color palette (modify this based on your data categories)
+# Use a specific color palette
 ft_palette <- c("deepskyblue3", "darkorange2", "darkgrey")
 
 # Singapore plot
@@ -202,9 +272,9 @@ sg_plot <- ggplot(new_data_SG, aes(x = Age_Group, y = Value, color = Variable.Na
   geom_line(size = 1) +
   scale_color_manual(values = ft_palette) +
   labs(
-    title = "Health Expenditure 2013",
+    title = "Health Expenditure (PPP adjusted) 2013",
     x = "Age",
-    y = "Value (USD)",
+    y = "Value (USD PPP)",
     color = "Expenditure Type"
   ) +
   theme_minimal(base_size = font_size) +
@@ -215,9 +285,9 @@ uk_plot <- ggplot(new_data_UK, aes(x = Age_Group, y = Value, color = Variable.Na
   geom_line(size = 1) +
   scale_color_manual(values = ft_palette) +
   labs(
-    title = "Health Expenditure 2013",
+    title = "Health Expenditure (PPP adjusted) 2013",
     x = "Age",
-    y = "Expenditure (USD)",
+    y = "Expenditure (USD PPP)",
     color = "Expenditure Type"
   ) +
   theme_minimal(base_size = font_size) +
@@ -228,9 +298,9 @@ total_plot <- ggplot(new_data_total, aes(x = Age_Group, y = Value, color = Count
   geom_line(size = 1) +
   scale_color_manual(values = ft_palette) +
   labs(
-    title = "Health Expenditure 2013",
+    title = "Health Expenditure (PPP adjusted) 2013",
     x = "Age",
-    y = "Expenditure (USD)",
+    y = "Expenditure (USD PPP)",
     color = "Country"
   ) +
   theme_minimal(base_size = font_size) +
