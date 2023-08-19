@@ -89,3 +89,24 @@ SG_weighted_avg_cost <- sum(final_table$SG_total_cost) / sum(final_table$`Seps A
 ratio <- SG_weighted_avg_cost / AUS_weighted_avg_cost
 
 ratio
+
+
+
+#output data
+# Convert final_table to an HTML table with styling
+final_table_html <- final_table %>%
+  kable(format = "html", table.attr = "class='table table-striped'") %>%
+  kable_styling()
+
+# Save the HTML table to a file
+writeLines(final_table_html, "final_table.html")
+
+# Convert final_data to an HTML table with styling (assuming final_data is already defined in your script)
+final_data_html <- final_data %>%
+  kable(format = "html", table.attr = "class='table table-striped'") %>%
+  kable_styling()
+
+# Save the HTML table to a file
+writeLines(final_data_html, "final_data.html")
+
+
