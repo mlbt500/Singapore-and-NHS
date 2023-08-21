@@ -168,6 +168,54 @@ NTAUK$Age <- 0:85
 pop_UK <- calculate_median_age(NTAUK)
 pop_UK
 
+NTAP <- NTA6[NTA6$Variable.Name == "Population, Total",]
+
+# Filter the data for Singapore
+SG_data <- NTAP[NTAP$Country == "Singapore",]
+
+# Calculate the total population for Singapore
+total_pop <- sum(SG_data$Value, na.rm = TRUE)
+
+# Calculate the population for age group 15-64
+pop_15_64 <- sum(SG_data$Value[SG_data$Age_Group >= 15 & SG_data$Age_Group <= 64], na.rm = TRUE)
+
+# Calculate the population for age group 65 and above
+pop_65_plus <- sum(SG_data$Value[SG_data$Age_Group >= 65], na.rm = TRUE)
+
+# Calculate percentages
+perc_15_64 <- (pop_15_64 / total_pop) * 100
+perc_65_plus <- (pop_65_plus / total_pop) * 100
+
+# Calculate the population for age group 0-14
+pop_0_14 <- sum(SG_data$Value[SG_data$Age_Group >= 0 & SG_data$Age_Group <= 14], na.rm = TRUE)
+
+# Calculate percentages
+perc_0_14 <- (pop_0_14 / total_pop) * 100
+
+# Return the calculated percentages for all age groups
+list(Percentage_0_to_14 = perc_0_14, Percentage_15_to_64 = perc_15_64, Percentage_65_plus = perc_65_plus)
+# Filter the data for the United Kingdom
+UK_data <- NTAP[NTAP$Country == "United Kingdom",]
+
+# Calculate the total population for the United Kingdom
+total_pop_UK <- sum(UK_data$Value, na.rm = TRUE)
+
+# Calculate the population for age group 0-14
+pop_0_14_UK <- sum(UK_data$Value[UK_data$Age_Group >= 0 & UK_data$Age_Group <= 14], na.rm = TRUE)
+
+# Calculate the population for age group 15-64
+pop_15_64_UK <- sum(UK_data$Value[UK_data$Age_Group >= 15 & UK_data$Age_Group <= 64], na.rm = TRUE)
+
+# Calculate the population for age group 65 and above
+pop_65_plus_UK <- sum(UK_data$Value[UK_data$Age_Group >= 65], na.rm = TRUE)
+
+# Calculate percentages for each age group
+perc_0_14_UK <- (pop_0_14_UK / total_pop_UK) * 100
+perc_15_64_UK <- (pop_15_64_UK / total_pop_UK) * 100
+perc_65_plus_UK <- (pop_65_plus_UK / total_pop_UK) * 100
+
+# Return the calculated percentages for all age groups for the United Kingdom
+list(UK_Percentage_0_to_14 = perc_0_14_UK, UK_Percentage_15_to_64 = perc_15_64_UK, UK_Percentage_65_plus = perc_65_plus_UK)
 
 # Compute the summary table using dplyr for NTA6
 summary_table <- NTA6 %>%
@@ -214,6 +262,8 @@ summary_table <- summary_table %>%
                                         ifelse(Country == "Singapore", WB_pop[2], NA)),
          World_Bank_Per_Capita_Health_Spend_USD = ifelse(Country == "United Kingdom", WB_spend[1],
                                                          ifelse(Country == "Singapore", WB_spend[2], NA)))
+
+
 
 # export html
 
