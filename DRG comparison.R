@@ -34,7 +34,7 @@ filtered_data <- data %>%
 AUD_to_USD <- mean(filtered_data$FXRUSD)
 
 #Singapore exchange rate
-SGER <- read_excel("Exchange Rates.xlsx")
+SGER <- read_excel("Exchange Rates.xlsx") # https://eservices.mas.gov.sg/Statistics/msb/ExchangeRates.aspx
 SGER <- SGER[-c(1:5), -c(1:3),]
 names <- SGER[1,]
 SGER <- SGER[-1,]
