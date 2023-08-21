@@ -6,10 +6,41 @@ library(knitr)
 library(kableExtra)
 
 # values
+# the data for both Australia and Singapore is 1 July to 30 June
+# For July 2018 to 2019 I used
 
-NEP_AUD_2018.19 <- 5012
-AUD_to_USD_2018 <- 0.7475
-SGD_to_USD_2019 <- 0.7331
+# Australia
+# Define the URL
+url <- "https://www.rba.gov.au/statistics/tables/xls-hist/2018-2022.xls"
+
+# Create a temporary file
+temp_file <- tempfile(fileext = ".xls")
+
+# Download the file into the temporary file
+download.file(url, temp_file, mode = "wb")
+
+# Load the data into R from the temporary file
+# Note: This will load the first sheet by default. You can specify other sheets using the 'sheet' argument.
+data <- read_excel(temp_file)
+data <- data[-c(1:9),1:2]
+names <- data[1,]
+colnames(data) <- names
+data <- data[-1,]
+data$`Series ID` <- as.numeric(data$`Series ID`)
+data$FXRUSD <- as.numeric(data$FXRUSD)
+data$Converted_Date <- as.Date(as.numeric(data$`Series ID`), origin = "1899-12-30")
+filtered_data <- data %>%
+  dplyr::filter(Converted_Date >= as.Date("2018-07-01") & Converted_Date <= as.Date("2019-06-30"))
+AUD_to_USD <- mean(filtered_data$FXRUSD)
+
+#Singapore exchange rate
+SGER <- read_excel("Exchange Rates.xlsx")
+SGER <- SGER[-c(1:5), -c(1:3),]
+names <- SGER[1,]
+SGER <- SGER[-1,]
+colnames(SGER) <- names
+SGER$`S$ Per Unit of US Dollar` <- as.numeric(SGER$`S$ Per Unit of US Dollar`)
+SGD_to_USD <-1/mean(SGER$`S$ Per Unit of US Dollar`, na.rm = TRUE)
 
 # Specify the URL for the Excel file -- MoH
 url <- "https://www.moh.gov.sg/docs/librariesprovider5/default-document-library/fee-publication-data-july18---june19-(for-download)_25-feb-2020.xlsx" 
@@ -89,8 +120,6 @@ SG_weighted_avg_cost <- sum(final_table$SG_total_cost) / sum(final_table$`Seps A
 ratio <- SG_weighted_avg_cost / AUS_weighted_avg_cost
 
 ratio
-
-
 
 #output data
 # Convert final_table to an HTML table with styling
