@@ -59,12 +59,16 @@ A_and_E_visits_SG <- as.numeric(table2[13,3])
 
 #population and per capita
 Population <- WDI(indicator = "SP.POP.TOTL", country = "SG", start = 2019, end = 2019)
-Population_SG <- as.numeric(Population[,5])
+Population_SG_WB <- as.numeric(Population[,5])
+Population_SG_OECD <- 4.026209*10^6 # https://data.oecd.org/pop/population.htm
 
-GP_visits_per_capita <- total_gp_estimate_2019/Population_SG
-hospital_admissions_per_capita <- hospital_admissions_SG/Population_SG
-A_and_E_visits_per_capita <- A_and_E_visits_SG/Population_SG
-A_and_E_visits_per_capita
+GP_visits_per_capita_WB <- total_gp_estimate_2019/Population_SG_WB
+hospital_admissions_per_capita_WB <- hospital_admissions_SG/Population_SG_WB
+A_and_E_visits_per_capita_WB <- A_and_E_visits_SG/Population_SG_WB
+
+GP_visits_per_capita_OECD <- total_gp_estimate_2019/Population_SG_OECD
+hospital_admissions_per_capita_OECD <- hospital_admissions_SG/Population_SG_OECD
+A_and_E_visits_per_capita_OECD <- A_and_E_visits_SG/Population_SG_OECD
 
 # URL of the file
 url <- "https://files.digital.nhs.uk/05/A594E3/hosp-epis-stat-admi-rep-tabs-2018-19-tab.xlsx"
@@ -156,20 +160,31 @@ England_GP_visits_per_capita_2019 <- total_no_gp_app_2019/England_population_201
 England_hos_visits_per_capita <- adm_2018.2019/England_population_2019
 England_A_and_E_per_capita <- A_and_E_2018.19/England_population_2019
 
-Singapore <- data.frame("Source" = "Singapore MoH", 
-                        "Hospital visits per capita" = hospital_admissions_per_capita, 
-                        "GP visits per capita" = GP_visits_per_capita,
-                        "A&E visits per capita" = A_and_E_visits_per_capita) 
+Singapore_WB <- data.frame("Source" = "Singapore MoH, World Bank Population", 
+                        "Hospital visits per capita" = hospital_admissions_per_capita_WB, 
+                        "GP visits per capita" = GP_visits_per_capita_WB,
+                        "A&E visits per capita" = A_and_E_visits_per_capita_WB) 
+
+Singapore_OECD <- data.frame("Source" = "Singapore MoH, OECD", 
+                             "Hospital visits per capita" = hospital_admissions_per_capita_OECD, 
+                             "GP visits per capita" = GP_visits_per_capita_OECD,
+                             "A&E visits per capita" = A_and_E_visits_per_capita_OECD) 
 
 England <- data.frame("Source" = "NHS England", 
                       "Hospital visits per capita" = England_hos_visits_per_capita, 
                       "GP visits per capita" = England_GP_visits_per_capita_2019,
                       "A&E visits per capita" = England_A_and_E_per_capita)
 
-summary_table <- rbind(Singapore, England)
+summary_table <- rbind(Singapore_WB, Singapore_OECD, England)
 
-comparison <- data.frame("Source" = "England/Singapore", 
-                      "Hospital visits per capita" = England_hos_visits_per_capita/hospital_admissions_per_capita, 
-                      "GP visits per capita" = England_GP_visits_per_capita_2019/GP_visits_per_capita,
-                      "A&E visits per capita" = England_A_and_E_per_capita/A_and_E_visits_per_capita)
-summary_table <- rbind(summary_table, comparison)
+comparison_WB <- data.frame("Source" = "England/Singapore, World Bank Population", 
+                      "Hospital visits per capita" = England_hos_visits_per_capita/hospital_admissions_per_capita_WB, 
+                      "GP visits per capita" = England_GP_visits_per_capita_2019/GP_visits_per_capita_WB,
+                      "A&E visits per capita" = England_A_and_E_per_capita/A_and_E_visits_per_capita_WB)
+
+comparison_OECD <- data.frame("Source" = "England/Singapore, OECD Population", 
+                         "Hospital visits per capita" = England_hos_visits_per_capita/hospital_admissions_per_capita_OECD, 
+                         "GP visits per capita" = England_GP_visits_per_capita_2019/GP_visits_per_capita_OECD,
+                         "A&E visits per capita" = England_A_and_E_per_capita/A_and_E_visits_per_capita_OECD)
+summary_table <- rbind(summary_table, comparison_WB, comparison_OECD)
+summary_table
