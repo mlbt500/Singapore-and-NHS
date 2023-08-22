@@ -58,8 +58,8 @@ hospital_admissions_SG <- as.numeric(sum(Singapore_health_utilisation[1:3,2]))
 A_and_E_visits_SG <- as.numeric(table2[13,3])
 
 #population and per capita
-Population <- WDI(indicator = "SP.POP.TOTL", country = "SG", start = 2019, end = 2019)
-Population_SG_WB <- as.numeric(Population[,5])
+Population <- WDI(indicator = "SP.POP.TOTL", country = c("AU", "SG"), start = 2019, end = 2019)
+Population_SG_WB <- as.numeric(Population[2,5])
 Population_SG_OECD <- 4.026209*10^6 # https://data.oecd.org/pop/population.htm
 
 GP_visits_per_capita_WB <- total_gp_estimate_2019/Population_SG_WB
@@ -84,7 +84,7 @@ if (http_status(download_status)$category == "Success") {
 }
 
 # Read the third sheet into a data frame
-hospital_admissions <- read_xlsx(output_file, sheet = 3)
+hospital_admissions <- read_xlsx(output_file, sheet = 10)
 
 # NHS England GP appointment estimates
 
@@ -112,16 +112,13 @@ gp <- appointments <- gp_appointments[-1,]
 
 #hospital admissions
 
-hospital_admissions_cleaned <- hospital_admissions[-c(1:2),]
-names <- hospital_admissions_cleaned[1,]
-hospital_admissions_cleaned <- hospital_admissions_cleaned[-1,]
-colnames(hospital_admissions_cleaned) <- names
-hospital_admissions_cleaned <- as.data.frame(hospital_admissions_cleaned)
-hospital_admissions_cleaned[,2] <- as.numeric(hospital_admissions_cleaned[, 2])
-hospital_admissions_cleaned[,2] <- as.numeric(hospital_admissions_cleaned[, 3])
-hospital_admissions_cleaned <- hospital_admissions_cleaned[-c(22:31),]
-hospital_admissions_cleaned[, 2:3] <- lapply(hospital_admissions_cleaned[, 2:3], function(col) as.numeric(as.character(col)))
-adm_2018.2019 <- hospital_admissions_cleaned[21,3]
+hospital_admissions1 <- hospital_admissions[-c(1:3),]
+names <- hospital_admissions1[1,]
+hospital_admissions1 <- hospital_admissions1[-1,]
+colnames(hospital_admissions1) <- names
+hospital_admissions2 <- hospital_admissions1[1:11,1:2]
+hospital_admissions2$"Ordinary episodes" <- as.numeric(hospital_admissions2$`Ordinary episodes`)
+adm_2018.2019 <- as.numeric(hospital_admissions2[hospital_admissions2$Year == "2018-19",2])-3*10^6
 
 #clean GP appointments
 gp_appointments <- read_xlsx(output_file_gp, sheet = 4, col_names = FALSE, col_types = "text")
@@ -160,6 +157,14 @@ England_GP_visits_per_capita_2019 <- total_no_gp_app_2019/England_population_201
 England_hos_visits_per_capita <- adm_2018.2019/England_population_2019
 England_A_and_E_per_capita <- A_and_E_2018.19/England_population_2019
 
+#Australia -- utilisation figures https://www.aihw.gov.au/getmedia/c14c8e7f-70a3-4b00-918c-1f56d0bd9414/aihw-hse-247.pdf.aspx?inline=true
+Australia_population_2019 <- as.numeric(Population[1,5])
+Hospitalisations <- 11.5 *10^6
+
+
+
+#organise data frame
+
 Singapore_WB <- data.frame("Source" = "Singapore MoH, World Bank Population", 
                         "Hospital visits per capita" = hospital_admissions_per_capita_WB, 
                         "GP visits per capita" = GP_visits_per_capita_WB,
@@ -174,6 +179,8 @@ England <- data.frame("Source" = "NHS England",
                       "Hospital visits per capita" = England_hos_visits_per_capita, 
                       "GP visits per capita" = England_GP_visits_per_capita_2019,
                       "A&E visits per capita" = England_A_and_E_per_capita)
+
+Australia <- data.frame("Source" = "Australian Institute of Health and Welfare")
 
 summary_table <- rbind(Singapore_WB, Singapore_OECD, England)
 
