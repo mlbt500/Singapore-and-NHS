@@ -5,9 +5,9 @@ library(tidyverse)
 library(knitr)
 library(kableExtra)
 
-# values
-# the data for both Australia and Singapore is 1 July to 30 June
-# For July 2018 to 2019 I used
+#nationally efficient price Australia
+NEP_AUD_2018.19 <- 5012 # p. 7 of https://www.ihacpa.gov.au/sites/default/files/2022-02/National%20Efficient%20Price%20Determination%202018%E2%80%9319.pdf
+
 
 # Australia
 # Define the URL
