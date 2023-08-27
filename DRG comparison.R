@@ -62,9 +62,9 @@ S_data_sheet <- S_data_sheet[-c(1:3),]
 colnames(S_data_sheet) <- names
 unique(S_data_sheet$`Ward Type`)
 Ward_A_SG <- S_data_sheet[S_data_sheet$`Ward Type`== "Ward A",]
-Ward_A_SG <- Ward_A_S[,c("DRG", "DRG Description", "P50 Bill")]
+Ward_A_SG <- Ward_A_SG[,c("DRG", "DRG Description", "P50 Bill")]
 colnames(Ward_A_SG)
-Ward_A_SG$"P50 Bill, USD 2019, July 2018-19" <- as.numeric(Ward_A_SG$"P50 Bill")*SGD_to_USD_2019
+Ward_A_SG$"P50 Bill, USD 2019, July 2018-19" <- as.numeric(Ward_A_SG$"P50 Bill")*SGD_to_USD
 
 # Optionally, you can remove the temporary file
 unlink(download_file)
@@ -76,7 +76,7 @@ A_data_sheet <- A_data_sheet[-c(1:6),]
 colnames(A_data_sheet) <- names
 AUS <- A_data_sheet[,c("product", "Cw", "Seps")]
 AUS$"Mean Unit Cost (AUD) 2018-19 FY" <- as.numeric(AUS$Cw)*NEP_AUD_2018.19
-AUS$"Mean Unit Cost (USD 2018, 18-19 FY)" <- AUS$"Mean Unit Cost (AUD) 2018-19 FY" * AUD_to_USD_2018
+AUS$"Mean Unit Cost (USD 2018, 18-19 FY)" <- AUS$"Mean Unit Cost (AUD) 2018-19 FY" * AUD_to_USD
 
 #Compare Singapore and AUS
 
