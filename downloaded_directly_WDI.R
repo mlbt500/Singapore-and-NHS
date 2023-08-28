@@ -1,5 +1,6 @@
 library(WDI)
 library(dplyr)
+library(ggplot2)
 
 # List of countries to filter
 countries_of_interest <- c("AU", "CH", "FI", "FR", "GB", "IE", "NL", "SG", "US", "ES", "GR", "PT", "IT", "NO", "TW", "KR", "JP")
@@ -27,16 +28,30 @@ data_2019 <- final_data[final_data$year == 2019,]
 # Determine the y-axis limits
 y_min <- min(data_2019$health_care_per_capita_PPP)
 y_max <- max(data_2019$health_care_per_capita_PPP) * 1.2
+# Set the outer margin space
+par(oma = c(3, 0, 0, 0))  # Adds space to the bottom outer margin
 
-# Create the plot with adjusted y-axis limits
-plot(health_care_per_capita_PPP ~ GDP_per_capita_PPP, data = data_2019, xlab = "GDP per capita (PPP Adjusted)", ylab = "Health care spending per capita (PPP Adjusted)", ylim = c(y_min, y_max))
+# Plot data
+par(oma = c(3, 0, 0, 0))  # Adds space to the bottom outer margin
 
-# Offset value to move the labels up
-offset <- (y_max - y_min) * 0.1 # Adjust as needed
+plot(health_care_per_capita_PPP ~ GDP_per_capita_PPP, data = data_2019, 
+     xlab = "GDP per capita", 
+     ylab = "Health care spending per capita", 
+     main = "Health spending versus GDP per capita (PPP adjusted)",  
+     ylim = c(y_min, y_max))
 
-text(data_2019$GDP_per_capita_PPP[data_2019$country == "IE"], data_2019$health_care_per_capita_PPP[data_2019$country == "IE"] + offset, labels = "IE")
-text(data_2019$GDP_per_capita_PPP[data_2019$country == "US"], data_2019$health_care_per_capita_PPP[data_2019$country == "US"] + offset, labels = "US")
-text(data_2019$GDP_per_capita_PPP[data_2019$country == "SG"], data_2019$health_care_per_capita_PPP[data_2019$country == "SG"] + offset, labels = "SG")
+# Add country labels with offset
+offset <- (y_max - y_min) * 0.1  # Adjust as needed
+text(data_2019$GDP_per_capita_PPP[data_2019$country == "IE"], 
+     data_2019$health_care_per_capita_PPP[data_2019$country == "IE"] + offset, labels = "IE")
+text(data_2019$GDP_per_capita_PPP[data_2019$country == "US"], 
+     data_2019$health_care_per_capita_PPP[data_2019$country == "US"] + offset, labels = "US")
+text(data_2019$GDP_per_capita_PPP[data_2019$country == "SG"], 
+     data_2019$health_care_per_capita_PPP[data_2019$country == "SG"] + offset, labels = "SG")
+
+# Add footnote to the outer margin
+mtext("AU, CH, FI, FR, GB, IE, NL, SG, US, ES, GR, PT, IT, NO, TW, KR, JP", 
+      side = 1, line = 1, outer = TRUE, cex = 0.8)
 
 write.csv(data_2019, file = "data_20192.csv", row.names = FALSE)
 

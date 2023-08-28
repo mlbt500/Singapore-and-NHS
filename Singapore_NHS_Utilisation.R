@@ -31,7 +31,6 @@ table1[2,1] <- table1[1,1]
 table1[4,1] <- table1[3,1]
 table1[6,1] <- table1[5,1]
 table1 <- table1[-c(1,3,5),]
-
 table1[6,1]
 #make columns 2 to 4 numeric
 table1 <- table1 %>%
@@ -49,24 +48,24 @@ table2 <- table2 %>%
 
 #final estimates
 GP_estimate <- data.frame(table2[15,])
-total_gp_estimate_2019 <- as.numeric(sum(GP_estimate[, 3] * 4))
-GP_estimate[, 2:4] <- GP_estimate[, 2:4] * 3
+total_gp_estimate_2018 <- as.numeric(sum(GP_estimate[, 2] * 5))
+GP_estimate[, 2:4] <- GP_estimate[, 2:4] * 4
 GP_estimate[1, 1] <- "Private GP estimate"
 colnames(GP_estimate) <- names(table2)
 Singapore_health_utilisation <- rbind(table2, GP_estimate)
 hospital_admissions_SG <- as.numeric(sum(Singapore_health_utilisation[1:3,2]))
-A_and_E_visits_SG <- as.numeric(table2[13,3])
+A_and_E_visits_SG <- as.numeric(table2[13,2])
 
 #population and per capita
-Population <- WDI(indicator = "SP.POP.TOTL", country = c("AU", "SG"), start = 2019, end = 2019)
+Population <- WDI(indicator = "SP.POP.TOTL", country = c("AU", "SG"), start = 2018, end = 2018)
 Population_SG_WB <- as.numeric(Population[2,5])
-Population_SG_OECD <- 4.026209*10^6 # https://data.oecd.org/pop/population.htm
+Population_SG_OECD <- 3.994283*10^6 # https://data.oecd.org/pop/population.htm
 
-GP_visits_per_capita_WB <- total_gp_estimate_2019/Population_SG_WB
+GP_visits_per_capita_WB <- total_gp_estimate_2018 /Population_SG_WB
 hospital_admissions_per_capita_WB <- hospital_admissions_SG/Population_SG_WB
 A_and_E_visits_per_capita_WB <- A_and_E_visits_SG/Population_SG_WB
 
-GP_visits_per_capita_OECD <- total_gp_estimate_2019/Population_SG_OECD
+GP_visits_per_capita_OECD <- total_gp_estimate_2018 /Population_SG_OECD
 hospital_admissions_per_capita_OECD <- hospital_admissions_SG/Population_SG_OECD
 A_and_E_visits_per_capita_OECD <- A_and_E_visits_SG/Population_SG_OECD
 
@@ -84,8 +83,43 @@ if (http_status(download_status)$category == "Success") {
 }
 
 # Read the third sheet into a data frame
-hospital_admissions <- read_xlsx(output_file, sheet = 10)
+hospital_admissions1 <- read_xlsx(output_file, sheet = 10)
+hospital_admissions1 <- hospital_admissions1[-c(1:3, 16:25),-c(4:5)]
+names <- hospital_admissions1[1,]
+colnames(hospital_admissions1) <- names
+hospital_admissions1 <- hospital_admissions1[-1,]
+FCE_IP_2018_9 <- as.numeric(hospital_admissions1[11,2])
 
+hospital_admissions2 <- read_xlsx(output_file, sheet = 3)
+hospital_admissions2 <- hospital_admissions2[-c(1:2, 25:34),]
+names <- hospital_admissions2[1,] 
+colnames(hospital_admissions2) <- names
+hospital_admissions2 <- hospital_admissions2[-1,]
+hospital_admissions2$FCEs <- as.numeric(hospital_admissions2$FCEs)
+hospital_admissions2$FAEs <- as.numeric(hospital_admissions2$FAEs)
+hospital_admissions2_18_9 <- hospital_admissions2[hospital_admissions2$Year == "2018-19",]
+difference_FCE_FAE <- as.numeric(hospital_admissions2_18_9[,2]- hospital_admissions2_18_9[,3])
+adm_2018.2019  <- FCE_IP_2018_9 - difference_FCE_FAE
+
+# Check whether this assumption is correct
+hospital_admissions1 <- read_excel("hosp-epis-stat-admi-rep-tabs-2020-21-tab-v2.xlsx", sheet = 3)
+FCE19_20 <- as.numeric(hospital_admissions1[25,2])
+FAE19_20 <- as.numeric(hospital_admissions1[25,3])
+difference <- FCE19_20 - FAE19_20
+hospital_admissions2 <- read_excel("hosp-epis-stat-admi-rep-tabs-2020-21-tab-v2.xlsx", sheet = 10)
+hospital_admissions2 <- hospital_admissions2[-c(1:3), -c(4:5)]
+FCE_IP <- as.numeric(hospital_admissions2[11,2])
+FAE_IP_E <- FCE_IP - difference
+hospital_admissions3 <- read_excel("hosp-epis-stat-admi-rep-tabs-2020-21-tab-v2.xlsx", sheet = 19)
+hospital_admissions3 <- hospital_admissions3[-c(1:2),]
+names <- hospital_admissions3[1,]
+colnames(hospital_admissions3) <- names
+hospital_admissions3 <- hospital_admissions3[-1,]
+admissions <- as.numeric(hospital_admissions3$"Ordinary")
+FAE_IP <- sum(admissions[1:53])
+(FAE_IP_E- FAE_IP)/FAE_IP # FAE_IP_E and FAE are roughly equivalent
+
+admissions <- hospital_admissions3$"Ordinary"
 # NHS England GP appointment estimates
 
 # URL of the GP appointments file
@@ -110,15 +144,6 @@ date_values <- as.Date(as.numeric(gp_appointments[1,]), origin = "1899-12-30")
 names(gp_appointments) <- date_values
 gp <- appointments <- gp_appointments[-1,]
 
-#hospital admissions
-
-hospital_admissions1 <- hospital_admissions[-c(1:3),]
-names <- hospital_admissions1[1,]
-hospital_admissions1 <- hospital_admissions1[-1,]
-colnames(hospital_admissions1) <- names
-hospital_admissions2 <- hospital_admissions1[1:11,1:2]
-hospital_admissions2$"Ordinary episodes" <- as.numeric(hospital_admissions2$`Ordinary episodes`)
-adm_2018.2019 <- as.numeric(hospital_admissions2[hospital_admissions2$Year == "2018-19",2])-3*10^6
 
 #clean GP appointments
 gp_appointments <- read_xlsx(output_file_gp, sheet = 4, col_names = FALSE, col_types = "text")
@@ -129,7 +154,7 @@ names(gp_appointments) <- date_values
 gp_appointments <- gp_appointments[-c(1:2),]
 gp_appointments[, 3:20] <- lapply(gp_appointments[, 3:20], function(col) as.numeric(as.character(col)))
 gp_appointments
-total_no_gp_app_2019 <- sum(gp_appointments[11,3:14])
+total_no_gp_app <- sum(gp_appointments[11,3:14])
 
 #NHS England A&E
 # Define the URL of the file you want to download
@@ -152,10 +177,10 @@ rownames(A_and_E_cleaned) <- "MSitAE"
 A_and_E_2018.19 <- as.numeric(A_and_E_cleaned[,10])
 
 #population of England 2019
-England_population_2019 <- 56.3 * 10^6 # source ONS:https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/articles/overviewoftheukpopulation/january2021
-England_GP_visits_per_capita_2019 <- total_no_gp_app_2019/England_population_2019
-England_hos_visits_per_capita <- adm_2018.2019/England_population_2019
-England_A_and_E_per_capita <- A_and_E_2018.19/England_population_2019
+England_population_2018 <- 55977000 # https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationprojections/bulletins/subnationalpopulationprojectionsforengland/2018based#:~:text=The%20population%20of%20England%20is,2018%2Dbased%20national%20population%20projections.
+England_hos_visits_per_capita <- adm_2018.2019/England_population_2018
+England_A_and_E_per_capita <- A_and_E_2018.19/England_population_2018
+England_GP_visits_per_capita <- total_no_gp_app/England_population_2018
 
 #Australia -- utilisation figures https://www.aihw.gov.au/getmedia/c14c8e7f-70a3-4b00-918c-1f56d0bd9414/aihw-hse-247.pdf.aspx?inline=true
 Australia_population_2019 <- as.numeric(Population[1,5])
@@ -177,7 +202,7 @@ Singapore_OECD <- data.frame("Source" = "Singapore MoH, OECD",
 
 England <- data.frame("Source" = "NHS England", 
                       "Hospital visits per capita" = England_hos_visits_per_capita, 
-                      "GP visits per capita" = England_GP_visits_per_capita_2019,
+                      "GP visits per capita" = England_GP_visits_per_capita,
                       "A&E visits per capita" = England_A_and_E_per_capita)
 
 Australia <- data.frame("Source" = "Australian Institute of Health and Welfare")
@@ -186,12 +211,12 @@ summary_table <- rbind(Singapore_WB, Singapore_OECD, England)
 
 comparison_WB <- data.frame("Source" = "England/Singapore, World Bank Population", 
                       "Hospital visits per capita" = England_hos_visits_per_capita/hospital_admissions_per_capita_WB, 
-                      "GP visits per capita" = England_GP_visits_per_capita_2019/GP_visits_per_capita_WB,
+                      "GP visits per capita" = England_GP_visits_per_capita/GP_visits_per_capita_WB,
                       "A&E visits per capita" = England_A_and_E_per_capita/A_and_E_visits_per_capita_WB)
 
 comparison_OECD <- data.frame("Source" = "England/Singapore, OECD Population", 
                          "Hospital visits per capita" = England_hos_visits_per_capita/hospital_admissions_per_capita_OECD, 
-                         "GP visits per capita" = England_GP_visits_per_capita_2019/GP_visits_per_capita_OECD,
+                         "GP visits per capita" = England_GP_visits_per_capita/GP_visits_per_capita_OECD,
                          "A&E visits per capita" = England_A_and_E_per_capita/A_and_E_visits_per_capita_OECD)
 summary_table <- rbind(summary_table, comparison_WB, comparison_OECD)
 summary_table
