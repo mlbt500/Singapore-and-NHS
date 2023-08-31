@@ -1,34 +1,34 @@
+# Ensure the necessary library is loaded
+library(WDI)
+
 # List of countries to filter
 countries_of_interest <- c("AU", "CH", "FI", "FR", "GB", "IE", "NL", "SG", "US", "ES", "GR", "PT", "IT", "NO", "TW", "KR", "JP")
 
 # Fetching the necessary data
-Health_per_capita_PPP <- WDI(indicator = "SH.XPD.CHEX.PP.CD", country = countries_of_interest)
-Health_percentage_of_GDP <- WDI(indicator = "SH.XPD.CHEX.GD.ZS", country = countries_of_interest)
-GDP_per_capita_PPP <- WDI(indicator = "NY.GDP.PCAP.PP.CD", country = countries_of_interest)
-Health_per_capita_USD <- WDI(indicator = "SH.XPD.CHEX.PC.CD", country = countries_of_interest)
-conversion_rate <- WDI(indicator = "PA.NUS.PPPC.RF", country = countries_of_interest)
+data_list <- WDI(indicator = c("SH.XPD.CHEX.PP.CD", "SH.XPD.CHEX.GD.ZS", "NY.GDP.PCAP.PP.CD", "SH.XPD.CHEX.PC.CD", "PA.NUS.PPPC.RF", "NE.CON.TOTL.CD", "SP.POP.TOTL"), 
+                 country = countries_of_interest, start = 2019, end = 2019)
 
-# Merging all data
-final_data <- merge(Health_per_capita_PPP, Health_percentage_of_GDP, by=c("iso2c", "year"))
-final_data <- merge(final_data, GDP_per_capita_PPP, by=c("iso2c", "year"))
-final_data <- merge(final_data, Health_per_capita_USD, by=c("iso2c", "year"))
-final_data <- merge(final_data, conversion_rate, by=c("iso2c", "year"))
+# Rename columns for clarity and ease
+names(data_list)[names(data_list) == "SH.XPD.CHEX.PP.CD"] <- "health_care_per_capita_PPP"
+names(data_list)[names(data_list) == "NY.GDP.PCAP.PP.CD"] <- "GDP_per_capita_PPP"
+names(data_list)[names(data_list) == "NE.CON.TOTL.CD"] <- "consumption"
+names(data_list)[names(data_list) == "SP.POP.TOTL"] <- "population"
+names(data_list)[names(data_list) == "PA.NUS.PPPC.RF"] <- "conversion_rate"
+names(data_list)[names(data_list) == "SH.XPD.CHEX.GD.ZS"] <- "health_exp_as_gdp_pct"
+names(data_list)[names(data_list) == "SH.XPD.CHEX.PC.CD"] <- "health_exp_per_capita_cd"
 
-# Fetching the new data
-consumption <- WDI(indicator = "NE.CON.TOTL.CD", country = countries_of_interest)
-population <- WDI(indicator = "SP.POP.TOTL", country = countries_of_interest)
-
-# Merging the new data
-final_data <- merge(final_data, consumption, by=c("iso2c", "year"))
-final_data <- merge(final_data, population, by=c("iso2c", "year"))
 
 # Calculate consumption per capita (PPP adjusted)
-final_data$consumption_per_capita_PPP <- (final_data$NE.CON.TOTL.CD / final_data$PA.NUS.PPPC.RF) / final_data$SP.POP.TOTL
+data_list$consumption_per_capita_PPP <- (data_list$consumption / data_list$conversion_rate) / data_list$population
 
 # Filter for the year 2019
-data_2019 <- final_data[final_data$year == 2019,]
+data_2019 <- data_list[data_list$year == 2019,]
 
-# Plot data
+# Define y axis limits
+y_min <- min(data_2019$health_care_per_capita_PPP, na.rm = TRUE) - 500
+y_max <- max(data_2019$health_care_per_capita_PPP, na.rm = TRUE) + 500
+
+# Plot 1: Health spending versus GDP per capita
 par(oma = c(3, 0, 0, 0))  # Adds space to the bottom outer margin
 
 plot(health_care_per_capita_PPP ~ GDP_per_capita_PPP, data = data_2019, 
@@ -37,58 +37,22 @@ plot(health_care_per_capita_PPP ~ GDP_per_capita_PPP, data = data_2019,
      main = "Health spending versus GDP per capita (PPP adjusted)",  
      ylim = c(y_min, y_max))
 
-# Add country labels with offset
-offset <- (y_max - y_min) * 0.1  # Adjust as needed
-text(data_2019$GDP_per_capita_PPP[data_2019$country == "IE"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "IE"] + offset, labels = "IE")
-text(data_2019$GDP_per_capita_PPP[data_2019$country == "US"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "US"] + offset, labels = "US")
-text(data_2019$GDP_per_capita_PPP[data_2019$country == "SG"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "SG"] + offset, labels = "SG")
+offset <- (y_max - y_min) * 0.1  # Adjust offset for clarity
+text(data_2019$GDP_per_capita_PPP[data_2019$iso2c == "IE"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "IE"] - offset, labels = "IE")
+text(data_2019$GDP_per_capita_PPP[data_2019$iso2c == "US"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "US"] - offset, labels = "US")
+text(data_2019$GDP_per_capita_PPP[data_2019$iso2c == "SG"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "SG"] - offset, labels = "SG")
 
 # Add footnote to the outer margin
 mtext("AU, CH, FI, FR, GB, IE, NL, SG, US, ES, GR, PT, IT, NO, TW, KR, JP", 
       side = 1, line = 1, outer = TRUE, cex = 0.8)
 
-# Plotting the data
-plot(health_care_per_capita_PPP ~ consumption_per_capita_PPP, data = data_2019,
-     xlab = "Consumption per capita (PPP adjusted)", 
-     ylab = "Health care spending per capita (PPP adjusted)",
-     main = "Health spending vs Consumption per capita (Both PPP adjusted)")
-
-# Add labels for the US, GBR, and Singapore
-offset <- (max(data_2019$health_care_per_capita_PPP) - min(data_2019$health_care_per_capita_PPP)) * 0.1  # Increased offset
-
-# Label for US
-text(data_2019$consumption_per_capita_PPP[data_2019$country == "US"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "US"] - offset, labels = "US")
-
-# Label for GBR
-text(data_2019$consumption_per_capita_PPP[data_2019$country == "GB"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "GB"] - offset, labels = "GBR")
-
-# Label for Singapore
-text(data_2019$consumption_per_capita_PPP[data_2019$country == "SG"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "SG"] - offset, labels = "SG")
-
-
-# Plotting the data
+# Plot 2: Health spending versus Consumption per capita
 plot(health_care_per_capita_PPP ~ consumption_per_capita_PPP, data = data_2019,
      xlab = "Consumption per capita", 
      ylab = "Health care spending per capita",
-     main = "Health vs Consumption (Both PPP adjusted)")
+     main = "Health spending vs Consumption (Both PPP adjusted)")
 
-# Add labels for the US, GBR, and Singapore
-offset <- (max(data_2019$health_care_per_capita_PPP) - min(data_2019$health_care_per_capita_PPP)) * 0.1  # Increased offset
-
-# Label for US
-text(data_2019$consumption_per_capita_PPP[data_2019$country == "US"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "US"] - offset, labels = "US")
-
-# Label for GBR
-text(data_2019$consumption_per_capita_PPP[data_2019$country == "GB"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "GB"] - offset, labels = "GBR")
-
-# Label for Singapore
-text(data_2019$consumption_per_capita_PPP[data_2019$country == "SG"], 
-     data_2019$health_care_per_capita_PPP[data_2019$country == "SG"] - offset, labels = "SG")
+offset <- (max(data_2019$health_care_per_capita_PPP) - min(data_2019$health_care_per_capita_PPP)) * 0.1
+text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "US"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "US"] - offset, labels = "US")
+text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "GB"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "GB"] - offset, labels = "GBR")
+text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "SG"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "SG"] - offset, labels = "SG")
