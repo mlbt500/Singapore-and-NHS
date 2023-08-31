@@ -52,7 +52,15 @@ plot(health_care_per_capita_PPP ~ consumption_per_capita_PPP, data = data_2019,
      ylab = "Health care spending per capita",
      main = "Health spending vs Consumption (Both PPP adjusted)")
 
+# Calculate offset for text positioning
 offset <- (max(data_2019$health_care_per_capita_PPP) - min(data_2019$health_care_per_capita_PPP)) * 0.1
-text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "US"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "US"] - offset, labels = "US")
-text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "GB"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "GB"] - offset, labels = "GBR")
-text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "SG"], data_2019$health_care_per_capita_PPP[data_2019$iso2c == "SG"] - offset, labels = "SG")
+
+# Add text labels for select countries (US, GB, SG, and SG2)
+text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "US"], 
+     data_2019$health_care_per_capita_PPP[data_2019$iso2c == "US"] - offset, labels = "US")
+text(data_2019$consumption_per_capita_PPP[data_2019$iso2c == "GB"], 
+     data_2019$health_care_per_capita_PPP[data_2019$iso2c == "GB"] - offset, labels = "GBR")
+text(data_2019$consumption_per_capita_PPP[data_2019$country == "Singapore"], 
+     data_2019$health_care_per_capita_PPP[data_2019$country == "Singapore"] - offset, labels = "SG")
+text(data_2019$consumption_per_capita_PPP[data_2019$country == "SG2"], 
+     data_2019$health_care_per_capita_PPP[data_2019$country == "SG2"] - offset, labels = "SG2")
