@@ -74,9 +74,9 @@ text(data_2019$consumption_per_capita_PPP[data_2019$country == "SG"],
 
 # Plotting the data
 plot(health_care_per_capita_PPP ~ consumption_per_capita_PPP, data = data_2019,
-     xlab = "Consumption per capita (PPP adjusted)", 
-     ylab = "Health care spending per capita (PPP adjusted)",
-     main = "Health spending vs Consumption per capita (Both PPP adjusted)")
+     xlab = "Consumption per capita", 
+     ylab = "Health care spending per capita",
+     main = "Health vs Consumption (Both PPP adjusted)")
 
 # Add labels for the US, GBR, and Singapore
 offset <- (max(data_2019$health_care_per_capita_PPP) - min(data_2019$health_care_per_capita_PPP)) * 0.1  # Increased offset
