@@ -110,6 +110,16 @@ combined_values <- combined_values %>%
     TRUE ~ Value
   ))
 
+#South Korea don't give population values
+
+combined_values <- combined_values %>%
+  filter(!is.na(Age) & !is.na(Value))
+
+combined_values <- combined_values %>%
+  filter(!is.na(Age) & !is.na(Value) & Age <= 85)
+
+combined_values <- combined_values %>%
+  filter(Country != "South Korea")
 
 # Extracting health spending from combined_values
 health_spending <- combined_values %>%
@@ -128,9 +138,7 @@ health_per_capita <- left_join(health_spending, population_data, by = c("Country
   mutate(Health_spending_per_capita = total_health_spending / total_population) %>%
   select(Country, Year, Health_spending_per_capita)
 
-print(health_per_capita)
-
-unique(NTA_combined$Variable.Name)
+health_per_capita
 
 # Extracting 'Consumption' from combined_values
 consumption_data <- combined_values %>%
@@ -145,4 +153,9 @@ consumption_per_capita <- left_join(consumption_data, population_data, by = c("C
 
 print(consumption_per_capita)
 
- 
+combined_per_capita <- left_join(health_per_capita, consumption_per_capita, by = c("Country", "Year"))
+
+#Remove United Kingdom and Austria
+
+combined_per_capita <- combined_per_capita %>%
+  filter(!(Country %in% c("Austria", "United Kingdom")))
