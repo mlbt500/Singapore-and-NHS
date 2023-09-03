@@ -218,6 +218,13 @@ perc_65_plus_UK <- (pop_65_plus_UK / total_pop_UK) * 100
 list(UK_Percentage_0_to_14 = perc_0_14_UK, UK_Percentage_15_to_64 = perc_15_64_UK, UK_Percentage_65_plus = perc_65_plus_UK)
 
 # Compute the summary table using dplyr for NTA6
+# Extract UK's total population from NTA6
+uk_population <- NTA6 %>%
+  filter(Country == "United Kingdom", Variable.Name == "Population, Total") %>%
+  pull(Value) %>%
+  sum(na.rm = TRUE)
+
+# Compute the summary table using dplyr for NTA6
 summary_table <- NTA6 %>%
   filter(Variable.Name %in% c("Health*Population", "Population, Total", "Health*Population PPP")) %>%
   group_by(Country, Variable.Name) %>%
