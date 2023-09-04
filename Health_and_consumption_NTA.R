@@ -146,6 +146,9 @@ consumption_data <- combined_values %>%
   group_by(Country, Year) %>%
   summarize(total_consumption = sum(Value, na.rm = TRUE))
 
+consumption_per_capita <- left_join(consumption_data, population_data, by = c("Country", "Year")) %>%
+  mutate(Consumption_per_capita = total_consumption / total_population) %>%
+  select(Country, Year, Consumption_per_capita)
 
 print(consumption_per_capita)
 
