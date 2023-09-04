@@ -177,7 +177,8 @@ SNG_ppp_2013 <- WDI(country="SGP", indicator="PA.NUS.PPP", start=2013, end=2013)
 #Australia
 cpi_data_australia <- cpi_data %>%
   filter(country == "Australia" & year %in% 2010:2013)
-aus_ppp_2013 <- WDI(country="AUS", indicator="PA.NUS.PPP", start=2013, end=2013)
+aus_ppp <- WDI(country="AUS", indicator="PA.NUS.PPP", start=2013, end=2013)
+aus_ppp_2013 <- as.numeric(aus_ppp$`2013`)
 cpi_australia <- cpi_data_australia[1,5]/100
 cpi_australia
 
@@ -205,3 +206,89 @@ cpi_data_us <- cpi_data %>%
   filter(country == "United States" & year %in% 2011:2013)
 cpi_data_us
 cpi_us <- cpi_data_us[1,5]/cpi_data_us[3,5]
+
+combined_per_capita <- combined_per_capita %>%
+  
+  # Adjust for Australia
+  mutate(
+    Health_spending_per_capita = if_else(
+      Country == "Australia", 
+      (Health_spending_per_capita * cpi_australia) / aus_ppp_2013$value,
+      Health_spending_per_capita
+    ),
+    Consumption_per_capita = if_else(
+      Country == "Australia", 
+      (Consumption_per_capita * cpi_australia) / aus_ppp_2013$value,
+      Consumption_per_capita
+    )
+  ) %>%
+  
+  # Adjust for Singapore (only PPP)
+  mutate(
+    Health_spending_per_capita = if_else(
+      Country == "Singapore", 
+      Health_spending_per_capita / SNG_ppp_2013$value,
+      Health_spending_per_capita
+    ),
+    Consumption_per_capita = if_else(
+      Country == "Singapore", 
+      Consumption_per_capita / SNG_ppp_2013$value,
+      Consumption_per_capita
+    )
+  ) %>%
+  
+  # Adjust for Canada
+  mutate(
+    Health_spending_per_capita = if_else(
+      Country == "Canada", 
+      (Health_spending_per_capita * cpi_canada) / can_ppp_2013$value,
+      Health_spending_per_capita
+    ),
+    Consumption_per_capita = if_else(
+      Country == "Canada", 
+      (Consumption_per_capita * cpi_canada) / can_ppp_2013$value,
+      Consumption_per_capita
+    )
+  ) %>%
+  
+  # Adjust for France
+  mutate(
+    Health_spending_per_capita = if_else(
+      Country == "France", 
+      (Health_spending_per_capita * cpi_france) / fra_ppp_2013$value,
+      Health_spending_per_capita
+    ),
+    Consumption_per_capita = if_else(
+      Country == "France", 
+      (Consumption_per_capita * cpi_france) / fra_ppp_2013$value,
+      Consumption_per_capita
+    )
+  ) %>%
+  
+  # Adjust for Slovenia
+  mutate(
+    Health_spending_per_capita = if_else(
+      Country == "Slovenia", 
+      Health_spending_per_capita / SVN_ppp_2013$value,
+      Health_spending_per_capita
+    ),
+    Consumption_per_capita = if_else(
+      Country == "Slovenia", 
+      Consumption_per_capita / SVN_ppp_2013$value,
+      Consumption_per_capita
+    )
+  ) %>%
+  
+  # Adjust for US (only CPI)
+  mutate(
+    Health_spending_per_capita = if_else(
+      Country == "US", 
+      Health_spending_per_capita * cpi_us,
+      Health_spending_per_capita
+    ),
+    Consumption_per_capita = if_else(
+      Country == "US", 
+      Consumption_per_capita * cpi_us,
+      Consumption_per_capita
+    )
+  )
