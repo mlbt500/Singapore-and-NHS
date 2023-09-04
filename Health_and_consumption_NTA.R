@@ -2,7 +2,6 @@ library(dplyr)
 library(tidyr)
 library(WDI)
 library(stringr)
-download.packages(WDI)
 
 NTA <- read.csv("NTA_consumption.csv")
 
