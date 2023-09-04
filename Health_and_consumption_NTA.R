@@ -146,10 +146,6 @@ consumption_data <- combined_values %>%
   group_by(Country, Year) %>%
   summarize(total_consumption = sum(Value, na.rm = TRUE))
 
-# Joining with population_data and calculating consumption per capita
-consumption_per_capita <- left_join(consumption_data, population_data, by = c("Country", "Year")) %>%
-  mutate(Consumption_per_capita = total_consumption / total_population) %>%
-  select(Country, Year, Consumption_per_capita)
 
 print(consumption_per_capita)
 
@@ -160,6 +156,10 @@ combined_per_capita <- left_join(health_per_capita, consumption_per_capita, by =
 combined_per_capita <- combined_per_capita %>%
   filter(!(Country %in% c("Austria", "United Kingdom", "Taiwan")))
 
+combined_per_capita <- combined_per_capita %>%
+  mutate(Health_spending_per_capita = if_else(Country == "Singapore", 
+                                              Health_spending_per_capita / 1000, 
+                                              Health_spending_per_capita))
 combined_per_capita
 
 # ISO2C country codes for the countries in your list
