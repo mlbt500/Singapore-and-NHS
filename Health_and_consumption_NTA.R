@@ -172,28 +172,37 @@ cpi_data <- WDI(indicator = "FP.CPI.TOTL", country = country_codes)
 # Fetching PPP conversion factor for the countries
 ppp_data <- WDI(indicator = "PA.NUS.PPP", country = country_codes)
 
+#Singapore
+SNG_ppp_2013 <- WDI(country="SGP", indicator="PA.NUS.PPP", start=2013, end=2013)
+
 #Australia
 cpi_data_australia <- cpi_data %>%
   filter(country == "Australia" & year %in% 2010:2013)
 aus_ppp_2013 <- WDI(country="AUS", indicator="PA.NUS.PPP", start=2013, end=2013)
+cpi_australia <- cpi_data_australia[1,5]/100
+cpi_australia
 
 #Canada
 cpi_data_canada <- cpi_data %>%
   filter(country == "Canada" & year %in% 2011:2013)
 can_ppp_2013 <- WDI(country="CAN", indicator="PA.NUS.PPP", start=2013, end=2013)
+cpi_canada <- cpi_data_canada[1,5]/cpi_data_canada[3,5]
 
 #France
 cpi_data_france <- cpi_data %>%
   filter(country == "France" & year %in% 2011:2013)
 fra_ppp_2013 <- WDI(country="FRA", indicator="PA.NUS.PPP", start=2013, end=2013)
+cpi_france <- cpi_data_france[1,5]/cpi_data_france[3,5]
 
 #Slovenia
 cpi_data_slovenia <- cpi_data %>%
   filter(country == "Slovenia" & year %in% 2010:2015)
 SVN_ppp_2013 <- WDI(country="SVN", indicator="PA.NUS.PPP", start=2013, end=2013)
+cpi_slovenia <- cpi_data_slovenia[1,5]
 
 
 #United States
 cpi_data_us <- cpi_data %>%
-  filter(country == "US" & year %in% 2011:2013)
-US_ppp_2013 <- WDI(country="US", indicator="PA.NUS.PPP", start=2013, end=2013)
+  filter(country == "United States" & year %in% 2011:2013)
+cpi_data_us
+cpi_us <- cpi_data_us[1,5]/cpi_data_us[3,5]
