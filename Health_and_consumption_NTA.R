@@ -2,6 +2,7 @@ library(dplyr)
 library(tidyr)
 library(WDI)
 library(stringr)
+download.packages(WDI)
 
 NTA <- read.csv("NTA_consumption.csv")
 
@@ -158,4 +159,41 @@ combined_per_capita <- left_join(health_per_capita, consumption_per_capita, by =
 #Remove United Kingdom and Austria
 
 combined_per_capita <- combined_per_capita %>%
-  filter(!(Country %in% c("Austria", "United Kingdom")))
+  filter(!(Country %in% c("Austria", "United Kingdom", "Taiwan")))
+
+combined_per_capita
+
+# ISO2C country codes for the countries in your list
+country_codes <- c("AUS", "CAN", "FRA", "SGP", "SVN", "TWN", "USA")
+
+# Fetching CPI data for the countries
+cpi_data <- WDI(indicator = "FP.CPI.TOTL", country = country_codes)
+
+# Fetching PPP conversion factor for the countries
+ppp_data <- WDI(indicator = "PA.NUS.PPP", country = country_codes)
+
+#Australia
+cpi_data_australia <- cpi_data %>%
+  filter(country == "Australia" & year %in% 2010:2013)
+aus_ppp_2013 <- WDI(country="AUS", indicator="PA.NUS.PPP", start=2013, end=2013)
+
+#Canada
+cpi_data_canada <- cpi_data %>%
+  filter(country == "Canada" & year %in% 2011:2013)
+can_ppp_2013 <- WDI(country="CAN", indicator="PA.NUS.PPP", start=2013, end=2013)
+
+#France
+cpi_data_france <- cpi_data %>%
+  filter(country == "France" & year %in% 2011:2013)
+fra_ppp_2013 <- WDI(country="FRA", indicator="PA.NUS.PPP", start=2013, end=2013)
+
+#Slovenia
+cpi_data_slovenia <- cpi_data %>%
+  filter(country == "Slovenia" & year %in% 2010:2015)
+SVN_ppp_2013 <- WDI(country="SVN", indicator="PA.NUS.PPP", start=2013, end=2013)
+
+
+#United States
+cpi_data_us <- cpi_data %>%
+  filter(country == "US" & year %in% 2011:2013)
+US_ppp_2013 <- WDI(country="US", indicator="PA.NUS.PPP", start=2013, end=2013)
