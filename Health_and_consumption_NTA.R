@@ -175,32 +175,35 @@ cpi_data <- WDI(indicator = "FP.CPI.TOTL", country = country_codes)
 ppp_data <- WDI(indicator = "PA.NUS.PPP", country = country_codes)
 
 #Singapore
-SNG_ppp_2013 <- WDI(country="SGP", indicator="PA.NUS.PPP", start=2013, end=2013)
+SNG_ppp <- WDI(country="SGP", indicator="PA.NUS.PPP", start=2013, end=2013)
+SNG_ppp_2013 <- as.numeric(SNG_ppp_2013[5])
 
 #Australia
 cpi_data_australia <- cpi_data %>%
   filter(country == "Australia" & year %in% 2010:2013)
 aus_ppp <- WDI(country="AUS", indicator="PA.NUS.PPP", start=2013, end=2013)
-aus_ppp_2013 <- as.numeric(aus_ppp$`2013`)
+aus_ppp_2013 <- as.numeric(aus_ppp[5])
 cpi_australia <- cpi_data_australia[1,5]/100
-cpi_australia
 
 #Canada
 cpi_data_canada <- cpi_data %>%
   filter(country == "Canada" & year %in% 2011:2013)
-can_ppp_2013 <- WDI(country="CAN", indicator="PA.NUS.PPP", start=2013, end=2013)
+can_ppp <- WDI(country="CAN", indicator="PA.NUS.PPP", start=2013, end=2013)
+can_ppp_2013 <- as.numeric(can_ppp[5])
 cpi_canada <- cpi_data_canada[1,5]/cpi_data_canada[3,5]
 
 #France
 cpi_data_france <- cpi_data %>%
   filter(country == "France" & year %in% 2011:2013)
-fra_ppp_2013 <- WDI(country="FRA", indicator="PA.NUS.PPP", start=2013, end=2013)
+fra_ppp <- WDI(country="FRA", indicator="PA.NUS.PPP", start=2013, end=2013)
+fra_ppp_2013 <- as.numeric(fra_ppp[5])
 cpi_france <- cpi_data_france[1,5]/cpi_data_france[3,5]
 
 #Slovenia
 cpi_data_slovenia <- cpi_data %>%
   filter(country == "Slovenia" & year %in% 2010:2015)
-SVN_ppp_2013 <- WDI(country="SVN", indicator="PA.NUS.PPP", start=2013, end=2013)
+SVN_ppp <- WDI(country="SVN", indicator="PA.NUS.PPP", start=2013, end=2013)
+SVN_ppp_2013 <- as.numeric(SVN_ppp[5])
 cpi_slovenia <- cpi_data_slovenia[1,5]
 
 
@@ -211,87 +214,51 @@ cpi_data_us
 cpi_us <- cpi_data_us[1,5]/cpi_data_us[3,5]
 
 combined_per_capita <- combined_per_capita %>%
-  
-  # Adjust for Australia
   mutate(
-    Health_spending_per_capita = if_else(
-      Country == "Australia", 
-      (Health_spending_per_capita * cpi_australia) / aus_ppp_2013$value,
-      Health_spending_per_capita
+    Health_spending_per_capita = case_when(
+      Country == "Australia" ~ (Health_spending_per_capita * cpi_australia) / aus_ppp_2013,
+      Country == "Singapore" ~ Health_spending_per_capita / SNG_ppp_2013,
+      Country == "Canada" ~ (Health_spending_per_capita * cpi_canada) / can_ppp_2013,
+      Country == "France" ~ (Health_spending_per_capita * cpi_france) / fra_ppp_2013,
+      Country == "Slovenia" ~ Health_spending_per_capita / SVN_ppp_2013,
+      Country == "US" ~ Health_spending_per_capita * cpi_us,
+      TRUE ~ Health_spending_per_capita
     ),
-    Consumption_per_capita = if_else(
-      Country == "Australia", 
-      (Consumption_per_capita * cpi_australia) / aus_ppp_2013$value,
-      Consumption_per_capita
-    )
-  ) %>%
-  
-  # Adjust for Singapore (only PPP)
-  mutate(
-    Health_spending_per_capita = if_else(
-      Country == "Singapore", 
-      Health_spending_per_capita / SNG_ppp_2013$value,
-      Health_spending_per_capita
-    ),
-    Consumption_per_capita = if_else(
-      Country == "Singapore", 
-      Consumption_per_capita / SNG_ppp_2013$value,
-      Consumption_per_capita
-    )
-  ) %>%
-  
-  # Adjust for Canada
-  mutate(
-    Health_spending_per_capita = if_else(
-      Country == "Canada", 
-      (Health_spending_per_capita * cpi_canada) / can_ppp_2013$value,
-      Health_spending_per_capita
-    ),
-    Consumption_per_capita = if_else(
-      Country == "Canada", 
-      (Consumption_per_capita * cpi_canada) / can_ppp_2013$value,
-      Consumption_per_capita
-    )
-  ) %>%
-  
-  # Adjust for France
-  mutate(
-    Health_spending_per_capita = if_else(
-      Country == "France", 
-      (Health_spending_per_capita * cpi_france) / fra_ppp_2013$value,
-      Health_spending_per_capita
-    ),
-    Consumption_per_capita = if_else(
-      Country == "France", 
-      (Consumption_per_capita * cpi_france) / fra_ppp_2013$value,
-      Consumption_per_capita
-    )
-  ) %>%
-  
-  # Adjust for Slovenia
-  mutate(
-    Health_spending_per_capita = if_else(
-      Country == "Slovenia", 
-      Health_spending_per_capita / SVN_ppp_2013$value,
-      Health_spending_per_capita
-    ),
-    Consumption_per_capita = if_else(
-      Country == "Slovenia", 
-      Consumption_per_capita / SVN_ppp_2013$value,
-      Consumption_per_capita
-    )
-  ) %>%
-  
-  # Adjust for US (only CPI)
-  mutate(
-    Health_spending_per_capita = if_else(
-      Country == "US", 
-      Health_spending_per_capita * cpi_us,
-      Health_spending_per_capita
-    ),
-    Consumption_per_capita = if_else(
-      Country == "US", 
-      Consumption_per_capita * cpi_us,
-      Consumption_per_capita
+    Consumption_per_capita = case_when(
+      Country == "Australia" ~ (Consumption_per_capita * cpi_australia) / aus_ppp_2013,
+      Country == "Singapore" ~ Consumption_per_capita / SNG_ppp_2013,
+      Country == "Canada" ~ (Consumption_per_capita * cpi_canada) / can_ppp_2013,
+      Country == "France" ~ (Consumption_per_capita * cpi_france) / fra_ppp_2013,
+      Country == "Slovenia" ~ Consumption_per_capita / SVN_ppp_2013,
+      Country == "US" ~ Consumption_per_capita * cpi_us,
+      TRUE ~ Consumption_per_capita
     )
   )
+
+library(quantreg)
+# Fitting 10th quantile regression
+rq_fit_10 <- rq(Health_spending_per_capita ~ Consumption_per_capita, data = combined_per_capita, tau = 0.1)
+
+# Fitting 90th quantile regression
+rq_fit_90 <- rq(Health_spending_per_capita ~ Consumption_per_capita, data = combined_per_capita, tau = 0.9)
+
+# Create a scatter plot
+plot(combined_per_capita$Consumption_per_capita, combined_per_capita$Health_spending_per_capita, 
+     xlab = "Consumption Per Capita", 
+     ylab = "Health Spending Per Capita", 
+     main = "Health Spending vs. Consumption Per Capita",
+     pch = 19,  # Solid circle points
+     col = "black",
+     xlim = range(combined_per_capita$Consumption_per_capita) + c(-5000, 5000), # Adjusting xlim for better visibility of labels
+     ylim = range(combined_per_capita$Health_spending_per_capita) + c(-500, 500) # Adjusting ylim for better visibility of labels
+)
+
+# Add 10th quantile trend line (using red for distinction)
+abline(rq_fit_10, lty = 2, col = "red")
+
+# Add 90th quantile trend line (using blue for distinction)
+abline(rq_fit_90, lty = 2, col = "blue")
+
+# Add country names as labels to the points
+text(combined_per_capita$Consumption_per_capita, combined_per_capita$Health_spending_per_capita, 
+     labels = combined_per_capita$Country, pos = 3, cex = 0.7, col = "black")
