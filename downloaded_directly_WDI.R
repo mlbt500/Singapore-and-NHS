@@ -82,7 +82,7 @@ for(label in labels_to_add) {
 
 
 # Add a central title for both graphs with the title spanning two lines
-title("Health Care Spending vs. Economic Indicators\n(2019 World Bank Development Indicators PPP adjusted)", outer = TRUE, line = -2)
+title("Health Care Spending vs. Economic Indicators 2019\n World Bank Development Indicators (USD PPP adjusted)", outer = TRUE, line = -2)
 
 # Add footnotes to the outer margin
 
