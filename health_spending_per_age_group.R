@@ -318,24 +318,37 @@ new_data_SG <- new_data[new_data$Country == "Singapore",]
 new_data_UK <- new_data[new_data$Country == "United Kingdom",]
 new_data_total <- new_data[new_data$Variable.Name == "Public and Private, Health PPP", ]
 
-# Set a font size
-font_size <- 14
+# Prepare colors and data
+colors <- c("red", "black", "lightgray")
+unique_variables <- unique(new_data_SG$Variable.Name)
+num_vars <- length(unique_variables)
 
-# Use a specific color palette
-ft_palette <- c("deepskyblue3", "darkorange2", "darkgrey")
+# Adjust margins to add space at the bottom for the footnote
+par(mar = c(6, 5, 4, 4)) # 6 lines at the bottom instead of the default 5
 
-# Singapore plot
-sg_plot <- ggplot(new_data_SG, aes(x = Age_Group, y = Value, color = Variable.Name, group = Variable.Name)) +
-  geom_line(size = 1) +
-  scale_color_manual(values = ft_palette) +
-  labs(
-    title = "Health Expenditure (PPP adjusted) 2013",
-    x = "Age",
-    y = "Value (USD PPP)",
-    color = "Expenditure Type"
-  ) +
-  theme_minimal(base_size = font_size) +
-  theme(legend.position = c(0, 1), legend.justification = c(0, 1), panel.grid.minor = element_blank())
+# Create a blank plot
+plot(new_data_SG$Value ~ new_data_SG$Age_Group, 
+     type="n", # No points or lines, just setting up the canvas
+     main="Singapore Health Spending by Age 2013", 
+     xlab="Age", 
+     ylab="Health spending (USD PPP)", 
+     xlim=range(new_data_SG$Age_Group),
+     ylim=range(new_data_SG$Value))
+
+# Loop through the variables and add lines
+for (i in 1:num_vars) {
+  subset_data <- new_data_SG[new_data_SG$Variable.Name == unique_variables[i], ]
+  lines(subset_data$Age_Group, subset_data$Value, col=colors[i], lwd=2)
+}
+
+# Custom legend labels
+legend_labels <- c("Private", "Public", "Total")
+
+# Add a legend to the top-left
+legend("topleft", legend=legend_labels, lty=1, lwd=2, col=colors, bg="white")
+
+# Add the footnote
+mtext("*National Accounts Project", side=1, line=5, adj=0, cex=0.8)
 
 # UK plot
 uk_plot <- ggplot(new_data_UK, aes(x = Age_Group, y = Value, color = Variable.Name)) +
