@@ -2,7 +2,7 @@
 library(WDI)
 
 # List of countries to filter
-countries_of_interest <- c("AU", "CH", "FI", "FR", "GB", "IE", "NL", "SG", "US", "ES", "GR", "PT", "IT", "NO", "TW", "KR", "JP")
+countries_of_interest <- c("AU", "CH", "FI", "FR", "GB", "IE", "NL", "SG", "US", "ES", "GR", "PT", "IT", "NO", "KR", "JP")
 
 # Fetching the necessary data
 data_list <- WDI(indicator = c("SH.XPD.CHEX.PP.CD", "SH.XPD.CHEX.GD.ZS", "NY.GDP.PCAP.PP.CD", "SH.XPD.CHEX.PC.CD", "PA.NUS.PPPC.RF", "NE.CON.TOTL.CD", "SP.POP.TOTL"), 
@@ -87,7 +87,7 @@ title("Health Care Spending vs. Economic Indicators 2019\n World Bank Developmen
 # Add footnotes to the outer margin
 
 # Add footnotes to the outer margin
-mtext("**AU, CH, FI, FR, GB, IE, NL, SG, US, ES, GR, PT, IT, NO, TW, KR, JP", 
+mtext("**AU, CH, FI, FR, GB, IE, NL, SG, US, ES, GR, PT, IT, NO, KR, JP", 
       side = 1, line = 2, outer = TRUE, cex = 0.8)
 mtext("*Trend lines exclude outliers (IE, SG and US in the first graph; SG in the second graph)", 
       side = 1, line = 1, outer = TRUE, cex = 0.8)
@@ -177,7 +177,7 @@ for(label in labels_to_add) {
 title("Health Care Spending vs. Economic Indicators 2016\n World Bank Development Indicators (USD PPP adjusted)", outer = TRUE, line = -2)
 
 # Add footnotes to the outer margin
-mtext("**AU, CH, FI, FR, GB, IE, NL, SG, US, ES, GR, PT, IT, NO, TW, KR, JP", 
+mtext("**AU, CH, FI, FR, GB, IE, NL, SG, US, ES, GR, PT, IT, NO, KR, JP", 
       side = 1, line = 2, outer = TRUE, cex = 0.8)
 mtext("*Trend lines exclude outliers (IE, SG and US in the first graph; SG in the second graph)", 
       side = 1, line = 1, outer = TRUE, cex = 0.8)
