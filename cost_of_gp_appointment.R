@@ -47,3 +47,5 @@ gp_costs_per_appointment = effective_annual_gp_cost / number_of_appointments
 new_row <- data.frame(Category = "GP costs per appointment", Annual_Amount_GBP = gp_costs_per_appointment)
 nhs_data <- rbind(nhs_data, new_row)
 
+#Add USD values
+nhs_data$Annual_Amount_USD <- nhs_data$Annual_Amount_GBP * GBP_to_USD
