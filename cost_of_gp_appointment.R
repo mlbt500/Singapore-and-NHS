@@ -23,3 +23,27 @@ FY18_Amount = c(213500, 17.66, 31.91, 24.92, 20.13)
 doctor_renumeration$FY18_Amount_USD <- doctor_renumeration$FY18_Amount * SGD_to_USD
 
 #Data from Unit Cost of Health and Social Care for NHS https://kar.kent.ac.uk/79286/11/UCFinalFeb20.pdf
+nhs_data <- data.frame(
+  Category = c("GP Annual Renumeration", 
+               "Premises", 
+               "Other (Advertising, Promotion, Entertainment)", 
+               "Annual (including travel)", 
+               "Per Surgery Consultation (9.22 minutes)"),
+  Annual_Amount_GBP = c(113400, 15660, 17053, 201003, 28)  # GBP for Great British Pounds
+)
+
+# Compute "GP costs per appointment"
+total_costs = nhs_data$Annual_Amount_GBP[nhs_data$Category == "Annual (including travel)"]
+premises_costs = nhs_data$Annual_Amount_GBP[nhs_data$Category == "Premises"]
+other_costs = nhs_data$Annual_Amount_GBP[nhs_data$Category == "Other (Advertising, Promotion, Entertainment)"]
+surgery_consultation_cost = nhs_data$Annual_Amount_GBP[nhs_data$Category == "Per Surgery Consultation (9.22 minutes)"]
+
+effective_annual_gp_cost = total_costs - premises_costs - other_costs
+number_of_appointments = total_costs / surgery_consultation_cost
+
+gp_costs_per_appointment = effective_annual_gp_cost / number_of_appointments
+
+# Add the new value to the dataframe
+new_row <- data.frame(Category = "GP costs per appointment", Annual_Amount_GBP = gp_costs_per_appointment)
+nhs_data <- rbind(nhs_data, new_row)
+
