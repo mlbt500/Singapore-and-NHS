@@ -20,7 +20,7 @@ names(data_list)[names(data_list) == "SH.XPD.OOPC.CH.ZS"] <- "out_of_pocket_heal
 data_list$consumption_per_capita <- data_list$consumption / data_list$population
 
 # Calculate ratio of consumption per capita to out-of-pocket health spending (USD per capita)
-data_list$health_versus_consumption <- data_list$consumption_per_capita / data_list$out_of_pocket_health_spend_USD_per_capita
+data_list$health_versus_consumption <- data_list$out_of_pocket_health_spend_USD_per_capita/ data_list$consumption_per_capita
 
 par(mfrow=c(1,2), oma=c(4, 0, 0, 0))  # Sets up a 1x2 plotting area
 
