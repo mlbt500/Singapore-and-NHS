@@ -22,3 +22,44 @@ data_list$consumption_per_capita <- data_list$consumption / data_list$population
 # Calculate ratio of consumption per capita to out-of-pocket health spending (USD per capita)
 data_list$health_versus_consumption <- data_list$consumption_per_capita / data_list$out_of_pocket_health_spend_USD_per_capita
 
+par(mfrow=c(1,2), oma=c(4, 0, 0, 0))  # Sets up a 1x2 plotting area
+
+# Set colors
+colors <- c("lightgray", "red", "black")
+
+# Create an empty plot
+plot(NULL, xlim=c(min(data_list$year), max(data_list$year)), ylim=c(min(data_list$out_of_pocket_health_spend_pc_health_spend, na.rm=TRUE), max(data_list$out_of_pocket_health_spend_pc_health_spend, na.rm=TRUE)),
+     xlab="Year", ylab="Out of Pocket Health Spending (% of Health Spend)",
+     main="Out of Pocket Health Spending: 2000-2019")
+
+# Loop through each country to draw lines
+for (country in unique(data_list$country)) {
+  country_data <- data_list[data_list$country == country, ]
+  lines(country_data$year, country_data$out_of_pocket_health_spend_pc_health_spend, col=colors[which(unique(data_list$country) == country)], lwd=2)
+}
+
+# Add legend
+legend("topright", legend=unique(data_list$country), col=colors, lty=1, lwd=2)
+
+# Add footnote
+mtext("Source: World Bank Development Indicators", side=1, line=4, adj=0, cex=0.7)
+
+# Set colors
+colors <- c("lightgray", "red", "black")
+
+# Create an empty plot
+plot(NULL, xlim=c(min(data_list$year), max(data_list$year)), ylim=c(min(data_list$health_versus_consumption, na.rm=TRUE), max(data_list$health_versus_consumption, na.rm=TRUE)),
+     xlab="Year", ylab="Health versus Consumption",
+     main="Health versus Consumption: 2000-2019")
+
+# Loop through each country to draw lines
+for (country in unique(data_list$country)) {
+  country_data <- data_list[data_list$country == country, ]
+  lines(country_data$year, country_data$health_versus_consumption, col=colors[which(unique(data_list$country) == country)], lwd=2)
+}
+
+# Add legend
+legend("topright", legend=unique(data_list$country), col=colors, lty=1, lwd=2)
+
+# Add footnote
+mtext("Source: World Bank Development Indicators", side=1, line=4, adj=0, cex=0.7)
