@@ -59,3 +59,17 @@ for (country in unique(data_list$country)) {
 # Add overall title and footnote
 mtext("Out-of-pocket health spend for \n Singapore, Switzerland, and Portugal", side= 3, line=1, outer=TRUE, cex=2)
 mtext("Source: World Bank Development Indicators", side=1, line=1, adj=0, cex=0.7, outer=TRUE)
+
+# Prepare data for Plot 3
+data_for_plot3 <- data_list[, c("year", "out_of_pocket_health_spend_pc_health_spend")]
+# Ensure unique rows if necessary or perform any aggregation
+
+# Export the data for Plot 3
+write.csv(data_for_plot3, "plot3_out_of_pocket_health_spend_percentage.csv", row.names = FALSE)
+
+# Prepare data for Plot 4
+data_for_plot4 <- data_list[, c("year", "health_versus_consumption")]
+# Ensure unique rows if necessary or perform any aggregation
+
+# Export the data for Plot 4
+write.csv(data_for_plot4, "plot4_health_versus_consumption.csv", row.names = FALSE)
