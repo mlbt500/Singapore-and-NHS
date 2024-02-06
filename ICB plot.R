@@ -38,3 +38,11 @@ ggplot(merged_data) +
        fill = "Proportion >5K pt:GP",
        caption = "Reproduced with permission from Steve Black @sib313")  # Add footnote
 
+# Convert the sf object to a regular dataframe by dropping geometry
+plot5_data <- as.data.frame(merged_data %>% st_set_geometry(NULL))
+
+# Export the data to a CSV file
+write.csv(plot5_data, "plot5_data.csv", row.names = FALSE)
+
+# Export the merged shapefile data as a new shapefile with the name plot5_shape
+st_write(merged_data, "plot5_shape/plot5_shape.shp")
