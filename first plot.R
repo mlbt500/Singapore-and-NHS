@@ -90,3 +90,13 @@ mtext("*Trend lines exclude outliers (IE, SG and US in the first graph; SG in th
 
 # Reset graphics parameters
 par(mfrow=c(1,1), oma=c(0,0,0,0))
+
+# Data for Plot 1: GDP per capita (PPP) vs. Health care spending per capita (PPP)
+data_for_plot1 <- data_2019[, c("GDP_per_capita_PPP", "health_care_per_capita_PPP")]
+names(data_for_plot1) <- c("GDP_per_capita_PPP", "Health_Care_Per_Capita_PPP")  # Labeling columns properly
+write.csv(data_for_plot1, "data_for_plot1_GDP_vs_Health_Care_Spending.csv", row.names = FALSE)
+
+# Data for Plot 2: Consumption per capita (PPP) vs. Health care spending per capita (PPP)
+data_for_plot2 <- data_2019[, c("consumption_per_capita_PPP", "health_care_per_capita_PPP")]
+names(data_for_plot2) <- c("Consumption_Per_Capita_PPP", "Health_Care_Per_Capita_PPP")  # Labeling columns properly
+write.csv(data_for_plot2, "data_for_plot2_Consumption_vs_Health_Care_Spending.csv", row.names = FALSE)
