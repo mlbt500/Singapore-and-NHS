@@ -4,7 +4,7 @@ library(htmlTable)
 #load csvs
 
 data1 <- read.csv("no_patients_by_practice.csv" ) # dec 2023 https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services
-data2 <- read.csv("nhspaymentsgp-21-22-prac-csv-v2.csv") # 2021-22 https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/31-december-2023
+data2 <- read.csv("nhspaymentsgp-21-22-prac-csv-v2.csv") # Nov 2022 https://digital.nhs.uk/data-and-information/publications/statistical/nhs-payments-to-general-practice/england-2021-22/results
 
 #filter
 
