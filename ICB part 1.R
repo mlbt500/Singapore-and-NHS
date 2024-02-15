@@ -7,12 +7,13 @@ data1 <- read.csv("no_patients_by_practice.csv" ) # dec 2023 https://digital.nhs
 data2 <- read.csv("nhspaymentsgp-21-22-prac-csv-v2.csv") # Nov 2022 https://digital.nhs.uk/data-and-information/publications/statistical/nhs-payments-to-general-practice/england-2021-22/results
 data3 <- read.csv("GPPS_2023.csv")
 
+
 #filter
 
 selected_cols <- c("PRAC_CODE", "ICB_NAME", "TOTAL_PATIENTS", "TOTAL_GP_FTE")
 data1_filtered <- data1[,selected_cols]
 
-selected_cols <- c("Practice.Code", "Number.of.Weighted.Patients..Last.Known.Figure.") 
+selected_cols <- c("Practice.Name", "Practice.Code", "Practice.Postcode", "Number.of.Weighted.Patients..Last.Known.Figure.") 
 data2_filtered <- data2[,selected_cols]
 
 #combine
@@ -63,13 +64,6 @@ for(i in 2:length(icb_column)) {
   dataframe$"Total number of patients CR"[i] <- total
 }
 
-#combine GP feedback data
-cols <- c(
-  "Practice_Code",
-  "Q32base",
-  "Q32_123base",
-  "Q32_1", "Q32_2", "Q32_3", "Q32_4", "Q32_5",
-  "Q32_1pct", "Q32_2pct", "Q32_3pct", "Q32_4pct", "Q32_5pct",
-  "Q32ci_lower_wil", "Q32ci_upper_wil"
-)
-data3_filtered <- data3[,cols]
+dataframe
+
+colnames(merged_data)
