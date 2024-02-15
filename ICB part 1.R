@@ -5,6 +5,7 @@ library(htmlTable)
 
 data1 <- read.csv("no_patients_by_practice.csv" ) # dec 2023 https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services
 data2 <- read.csv("nhspaymentsgp-21-22-prac-csv-v2.csv") # Nov 2022 https://digital.nhs.uk/data-and-information/publications/statistical/nhs-payments-to-general-practice/england-2021-22/results
+data3 <- read.csv("GPPS_2023.csv")
 
 #filter
 
@@ -61,3 +62,14 @@ for(i in 2:length(icb_column)) {
   # Assign the total to the corresponding row in the dataframe
   dataframe$"Total number of patients CR"[i] <- total
 }
+
+#combine GP feedback data
+cols <- c(
+  "Practice_Code",
+  "Q32base",
+  "Q32_123base",
+  "Q32_1", "Q32_2", "Q32_3", "Q32_4", "Q32_5",
+  "Q32_1pct", "Q32_2pct", "Q32_3pct", "Q32_4pct", "Q32_5pct",
+  "Q32ci_lower_wil", "Q32ci_upper_wil"
+)
+data3_filtered <- data3[,cols]
